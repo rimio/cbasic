@@ -2,7 +2,7 @@
 #include <cassert>
 #include <getopt.h>
 
-#include "version.h"
+#include "configure.h"
 
 // Temporary defines
 #define NO_ERROR 0
