@@ -31,19 +31,34 @@ static int yylex (Parser::semantic_type *yylval, Lexer &lexer, ParserContext &co
 %union {
 	int ival;
 	float fval;
-	char *sval;
+	std::string *sval;
 }
 
 %token END 0
+%token MINUS
 %token NEWLINE
+%token PLUS
+%token POWER
+%token SLASH
+%token STAR
 
-%token <ival> INT
-%token <fval> FLOAT
-%token <sval> STRING
+%token <ival> ILITERAL
+%token <fval> FLITERAL
+%token <sval> SLITERAL
 
 %%
 
-start: INT FLOAT STRING
+plus_minus
+	: plus_minus PLUS plus_minus
+	| plus_minus MINUS plus_minus
+	| literal
+	;
+
+literal
+	: ILITERAL
+	| FLITERAL
+	| SLITERAL
+	;
 
 %%
 

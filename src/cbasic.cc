@@ -1,9 +1,11 @@
 #include <iostream>
 #include <cassert>
+#include <string>
 #include <getopt.h>
 
 #include "configure.h"
 #include "error.h"
+#include "parser-context.h"
 
 //
 // getopt_long options
@@ -12,10 +14,17 @@ static struct option long_options[] =
 {
 	{ "version",	no_argument,		NULL, 		'v' },
 	{ "help",		no_argument,		NULL,		'h' },
+	{ "output",		required_argument,	NULL,		'o' },
 
 	// End
 	{ NULL,			0,					NULL, 		0 }
 };
+
+//
+// Program arguments
+//
+static std::string *output_file = nullptr;
+static std::string *input_file = nullptr;
 
 //
 // Print version
@@ -57,11 +66,11 @@ int parse_args (int argc, char **argv)
 	{
 		// get option
 		int option_index = -1;
-		int c = getopt_long (argc, argv, "vh", long_options, &option_index);
+		int c = getopt_long (argc, argv, "vho:", long_options, &option_index);
 		if (c == -1)
 		{
 			// Finished
-			return NO_ERROR;
+			break;
 		}
 
 		// parse option
@@ -91,6 +100,18 @@ int parse_args (int argc, char **argv)
 				print_usage ();
 				return NO_ERROR;
 
+			case 'o':
+				if (optarg != NULL)
+				{
+					output_file = new std::string (optarg);
+				}
+				else
+				{
+					Error::internalError ("output file not provided");
+					return ER_FAILED;
+				}
+				break;
+
 			case '?':
 				/* error message should have been printed */
 				return ER_FAILED;
@@ -100,6 +121,29 @@ int parse_args (int argc, char **argv)
 				return ER_FAILED;
 		}
 	}
+
+	// Parse filename
+	if (argc == optind + 1)
+	{
+		if (argv[optind - 1] != NULL)
+		{
+			input_file = new std::string (argv[optind]);
+			return NO_ERROR;
+		}
+		else
+		{
+			Error::internalError ("file argument pointer is NULL");
+			return ER_FAILED;
+		}
+	}
+	else if (argc > optind + 1)
+	{
+		Error::internalError ("multiple input files not allowed");
+		return ER_FAILED;
+	}
+
+	// All ok
+	return NO_ERROR;
 }
 
 
@@ -121,6 +165,21 @@ int main (int argc, char **argv)
 		{
 			return ER_FAILED;
 		}
+
+		// Check minimum set of arguments
+		if (input_file == nullptr)
+		{
+			Error::error ("input file was not provided");
+			return ER_FAILED;
+		}
+	}
+
+	// Parse
+	ParserContext *pc = new ParserContext ();
+	if (pc->parseFile (*input_file) != NO_ERROR)
+	{
+		// Error should have been printed
+		return ER_FAILED;
 	}
 
 	// All ok
