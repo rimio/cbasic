@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.6)
 project (cbasic)
 
 # Flags
-SET(CMAKE_CXX_FLAGS "-std=c++0x -ggdb")
+set (CMAKE_CXX_FLAGS "-std=c++0x -ggdb")
 
 # Version
 set (VERSION_MAJOR 0)
@@ -15,25 +15,44 @@ set (SOURCE_DIR src)
 set (BUILD_DIR build)
 set (BIN_DIR ${BUILD_DIR}/bin)
 
+# Lexer and parser targets
+find_package (FLEX REQUIRED)
+find_package (BISON REQUIRED)
+flex_target (lexer ${SOURCE_DIR}/parser/lexer.l ${SOURCE_DIR}/parser/lexer.cc)
+bison_target (parser ${SOURCE_DIR}/parser/parser.yy ${SOURCE_DIR}/parser/parser.cc)
+add_flex_bison_dependency (lexer parser)
+
 # Include dirs
 include_directories (
 	${SOURCE_DIR}
+	${SOURCE_DIR}/error
+	${SOURCE_DIR}/parser
 	)
 
 # Config file
 configure_file (
-	"${SOURCE_DIR}/configure.h.in"
-	"${SOURCE_DIR}/configure.h"
+	${SOURCE_DIR}/configure.h.in
+	${SOURCE_DIR}/configure.h
 	)
 
 # Header files
 set (HEADER_FILES
 	${SOURCE_DIR}/configure.h
+	${SOURCE_DIR}/error/error.h
+	${SOURCE_DIR}/parser/parser-context.h
+
+	${BISON_parser_OUTPUT_HEADER}
+	${SOURCE_DIR}/parser/lexer.h
 	)
 
 # Source files
 set (SOURCE_FILES
 	${SOURCE_DIR}/cbasic.cc
+	${SOURCE_DIR}/error/error.cc
+	${SOURCE_DIR}/parser/parser-context.cc
+
+	${BISON_parser_OUTPUT_SOURCE}
+	${FLEX_lexer_OUTPUTS}
 	)
  
 # Executables

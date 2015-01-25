@@ -3,21 +3,18 @@
 #include <getopt.h>
 
 #include "configure.h"
-
-// Temporary defines
-#define NO_ERROR 0
-#define ER_FAILED 1
+#include "error.h"
 
 //
 // getopt_long options
 //
 static struct option long_options[] =
 {
-	{ "version",		no_argument,		NULL, 		'v' },
+	{ "version",	no_argument,		NULL, 		'v' },
 	{ "help",		no_argument,		NULL,		'h' },
 
 	// End
-	{ NULL,			0,			NULL, 		0 }
+	{ NULL,			0,					NULL, 		0 }
 };
 
 //
@@ -25,7 +22,7 @@ static struct option long_options[] =
 //
 void print_version ()
 {
-	std::cout << "CBASIC compiler " << VERSION_MAJOR << "." << VERSION_MINOR << std::endl << std::endl;
+	std::cout << "CBASIC compiler " << VERSION_MAJOR << "." << VERSION_MINOR << std::endl;
 }
 
 //
@@ -46,7 +43,7 @@ void print_legal ()
 void print_usage ()
 {
 	print_version ();
-
+	std::cout << std::endl;
 	std::cout << "Usage: cbasic [OPTION]... FILE" << std::endl;
 
 }
@@ -80,13 +77,13 @@ int parse_args (int argc, char **argv)
 				{
 					// This is not a flag and the value char given was zero.
 					// Should not happen
-					assert (false);
-					// TODO: internal error
+					Error::internalError ("short name is zero for non-flag parameter");
 					return ER_FAILED;
 				}
 
 			case 'v':
 				print_version ();
+				std::cout << std::endl;
 				print_legal ();
 				return NO_ERROR;
 
@@ -99,7 +96,7 @@ int parse_args (int argc, char **argv)
 				return ER_FAILED;
 
 			default:
-				// TODO: internal error
+				Error::internalError ("fatal error parsing input arguments");
 				return ER_FAILED;
 		}
 	}
@@ -122,7 +119,6 @@ int main (int argc, char **argv)
 		// Parse arguments
 		if (parse_args (argc, argv) != NO_ERROR)
 		{
-			// TODO: internal error here
 			return ER_FAILED;
 		}
 	}
