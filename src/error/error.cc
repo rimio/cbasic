@@ -17,7 +17,7 @@ void Error::internalError (const std::string error)
 	Error::reportError ("Internal error: " + error);
 }
 
-void Error::syntaxError (const std::string error)
+void Error::syntaxError (const std::string error, int line, int column)
 {
-	Error::reportError ("Syntax error: " + error);
+	Error::reportError ("Syntax error at line " + std::to_string (line) + " column " + std::to_string (column) + ": " + error);
 }

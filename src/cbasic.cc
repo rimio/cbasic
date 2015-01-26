@@ -4,8 +4,8 @@
 #include <getopt.h>
 
 #include "configure.h"
-#include "error.h"
-#include "parser-context.h"
+#include "error/error.h"
+#include "parser/parser-context.h"
 
 //
 // getopt_long options

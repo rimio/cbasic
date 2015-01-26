@@ -25,8 +25,6 @@ add_flex_bison_dependency (lexer parser)
 # Include dirs
 include_directories (
 	${SOURCE_DIR}
-	${SOURCE_DIR}/error
-	${SOURCE_DIR}/parser
 	)
 
 # Config file
@@ -41,6 +39,11 @@ set (HEADER_FILES
 	${SOURCE_DIR}/error/error.h
 	${SOURCE_DIR}/parser/parser-context.h
 
+	# parser nodes
+	${SOURCE_DIR}/parser/parser-node.h
+	${SOURCE_DIR}/parser/value-nodes.h
+
+	# flex/bison
 	${BISON_parser_OUTPUT_HEADER}
 	${SOURCE_DIR}/parser/lexer.h
 	)
@@ -51,6 +54,11 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/error/error.cc
 	${SOURCE_DIR}/parser/parser-context.cc
 
+	# parser nodes
+	${SOURCE_DIR}/parser/parser-node.cc
+	${SOURCE_DIR}/parser/value-nodes.cc
+
+	# flex/bison
 	${BISON_parser_OUTPUT_SOURCE}
 	${FLEX_lexer_OUTPUTS}
 	)

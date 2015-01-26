@@ -2,7 +2,7 @@
 #define PARSER_CONTEXT_H_
 
 #include <string>
-#include "error.h"
+#include "error/error.h"
 #include "parser.hh"
 #include "lexer.h"
 
@@ -18,7 +18,10 @@ public:
 	ParserContext ();
 	~ParserContext ();
 
+	// Parse a file, given the filename
 	int parseFile (std::string& filename);
+
+	// Print the parse tree
 	int printTree (std::ostream &stream);
 };
 

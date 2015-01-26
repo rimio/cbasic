@@ -1,5 +1,6 @@
 %skeleton "lalr1.cc"
 %require  "3.0"
+%locations
 %debug
 %defines
 %define parser_class_name {Parser}
@@ -24,7 +25,7 @@
 #include "parser-context.h"
 #include "lexer.h"
 
-static int yylex (Parser::semantic_type *yylval, Lexer &lexer, ParserContext &context);
+static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lexer &lexer, ParserContext &context);
 
 }
 
@@ -48,6 +49,10 @@ static int yylex (Parser::semantic_type *yylval, Lexer &lexer, ParserContext &co
 
 %%
 
+statement
+	: plus_minus
+	| plus_minus NEWLINE;
+
 plus_minus
 	: plus_minus PLUS plus_minus
 	| plus_minus MINUS plus_minus
@@ -62,12 +67,12 @@ literal
 
 %%
 
-void Parser::error (const std::string &err)
+void Parser::error (const Parser::location_type& loc, const std::string &err)
 {
-	Error::syntaxError (err); 
+	Error::syntaxError (err, loc.begin.line, loc.begin.column);
 }
 
-static int yylex (Parser::semantic_type *yylval, Lexer &lexer, ParserContext &context)
+static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lexer &lexer, ParserContext &context)
 {
 	return lexer.yylex (yylval);
 }
