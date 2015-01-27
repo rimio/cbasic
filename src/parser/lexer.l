@@ -1,7 +1,7 @@
 %{
 
 #include <string>
-#include "error.h"
+#include "error/error.h"
 #include "lexer.h"
 
 #define yyterminate()	return Parser::token::END
@@ -22,11 +22,14 @@
 "\\"							{ return Parser::token::BACKSLASH; }
 [Mm][Oo][Dd]					{ return Parser::token::MODULO; }
 
-[0-9]+							{ yylval->ival = atoi (yytext); return Parser::token::ILITERAL; }
-[0-9]*[.][0-9]+					{ yylval->fval = atof (yytext); return Parser::token::FLITERAL; }
-["][a-zA-Z]*["]					{ yylval->sval = new std::string (yytext); return Parser::token::SLITERAL; }
+[0-9]+									{ yylval->ival = atoi (yytext); return Parser::token::ILITERAL; }
+[0-9]*[.][0-9]+							{ yylval->fval = atof (yytext); return Parser::token::FLITERAL; }
+[0-9]*[.][0-9]+[Ee][-]?[0-9]*[1-9]+		{ yylval->fval = atof (yytext); return Parser::token::FLITERAL; }
+["][a-zA-Z]*["]							{ yylval->sval = new std::string (yytext); return Parser::token::SLITERAL; }
 
-[ \t]							{ }
+[ \t]							{ /* eat them */ }
 \n								{ return Parser::token::NEWLINE; }
+
+.								{ Error::syntaxError ("unrecognized token '" + std::string (yytext) + "'", 0, 0); }
 
 %%
