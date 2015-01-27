@@ -44,7 +44,7 @@ int ParserContext::parseFile (std::string &filename)
 	{
 		delete parser;
 	}
-	parser = new Parser (*lexer, *this);
+	parser = new Parser (*lexer, *this, &root_node);
 
 	// Parse
 	if (parser->parse () != NO_ERROR)
@@ -57,7 +57,36 @@ int ParserContext::parseFile (std::string &filename)
 	return NO_ERROR;
 }
 
+void ParserContext::printTreeRecursive (std::ostream &stream, int level, ParserNode *node)
+{
+	if (node == nullptr)
+		return;
+
+	// Pad for level
+	for (int i = 0; i < level; i ++)
+		std::cout << "  ";
+
+	// Print text
+	std::cout << node->toString () << std::endl;
+
+	// Print children
+	std::list<ParserNode *> ch = node->getChildren();
+	for (std::list<ParserNode *>::iterator it = ch.begin(); it != ch.end(); it ++)
+	{
+		printTreeRecursive (stream, level+1, *it);
+	}
+}
+
 int ParserContext::printTree (std::ostream &stream)
 {
-	return 0;
+	if (root_node != nullptr)
+	{
+		printTreeRecursive (stream, 0, root_node);
+		return NO_ERROR;
+	}
+	else
+	{
+		Error::internalError ("empty parse tree, can't print");
+		return ER_FAILED;
+	}
 }

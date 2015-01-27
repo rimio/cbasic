@@ -7,6 +7,10 @@
 
 %code requires
 {
+	#include "parser-node.h"
+	#include "value-nodes.h"
+	#include "operator-nodes.h"
+
 	class ParserContext;
 	class Lexer;
 }
@@ -16,6 +20,8 @@
 
 %lex-param		{ ParserContext &context }
 %parse-param	{ ParserContext &context }
+
+%parse-param	{ ParserNode **root_node }
 
 %code
 {
@@ -33,6 +39,10 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 	int ival;
 	float fval;
 	std::string *sval;
+
+	ParserNode *parser_node;
+	ValueNode *value_node;
+	OperatorNode *operator_node;
 }
 
 %token END 0
@@ -47,22 +57,52 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %token <fval> FLITERAL
 %token <sval> SLITERAL
 
+
+%type <value_node> literal
+%type <parser_node> plus_minus
+%type <parser_node> program
+
 %%
 
-statement
+program
 	: plus_minus
-	| plus_minus NEWLINE;
+		{
+			*root_node = $1;
+		}
+	| plus_minus NEWLINE
+		{
+			*root_node = $1;
+		}
+	;
 
 plus_minus
 	: plus_minus PLUS plus_minus
+		{
+			$$ = new PlusOperatorNode ($1, $3);
+		}
 	| plus_minus MINUS plus_minus
+		{
+			$$ = new MinusOperatorNode ($1, $3);
+		}
 	| literal
+		{
+			$$ = $1;
+		}
 	;
 
 literal
 	: ILITERAL
+		{
+			$$ = new IntegerValueNode ($1);
+		}
 	| FLITERAL
+		{
+			$$ = new FloatValueNode ($1);
+		}
 	| SLITERAL
+		{
+			$$ = new StringValueNode (*$1);
+		}
 	;
 
 %%

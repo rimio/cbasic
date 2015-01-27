@@ -42,6 +42,7 @@ set (HEADER_FILES
 	# parser nodes
 	${SOURCE_DIR}/parser/parser-node.h
 	${SOURCE_DIR}/parser/value-nodes.h
+	${SOURCE_DIR}/parser/operator-nodes.h
 
 	# flex/bison
 	${BISON_parser_OUTPUT_HEADER}
@@ -53,6 +54,7 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/cbasic.cc
 	${SOURCE_DIR}/error/error.cc
 	${SOURCE_DIR}/parser/parser-context.cc
+	${SOURCE_DIR}/parser/operator-nodes.cc
 
 	# parser nodes
 	${SOURCE_DIR}/parser/parser-node.cc

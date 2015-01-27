@@ -181,6 +181,7 @@ int main (int argc, char **argv)
 		// Error should have been printed
 		return ER_FAILED;
 	}
+	pc->printTree (std::cout);
 
 	// All ok
 	return 0;

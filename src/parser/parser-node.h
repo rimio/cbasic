@@ -2,13 +2,15 @@
 #define PARSER_NODE_H_
 
 #include <string>
+#include <list>
 
 //
 // Parser node types
 //
 typedef enum
 {
-	PT_VALUE
+	PT_VALUE,
+	PT_OPERATOR
 } ParserNodeType;
 
 //
@@ -27,10 +29,10 @@ public:
 	virtual std::string toString () = 0;
 
 	// Returns the type of parser node
-	virtual ParserNodeType getNodeType () = 0;
+	virtual ParserNodeType getNodeType () const = 0;
 
-	// Print the toString() result to stdout, prefixed by <level> tabs
-	void debugPrint (int level);
+	// Returns a list of all children
+	virtual std::list<ParserNode *> getChildren () = 0;
 };
 
 #endif

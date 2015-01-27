@@ -17,20 +17,27 @@ typedef enum
 //
 // Node to hold intermediate values (like literals and folded results)
 //
-class ValueNode : ParserNode
+class ValueNode : public ParserNode
 {
+protected:
+	// Hidden constructor
+	ValueNode () { };
+
 public:
 	// Return the type of the value
 	virtual ValueType getType () = 0;
 
 	// This is a value node
 	ParserNodeType getNodeType () const { return PT_VALUE; }
+
+	// No children for value nodes
+	std::list<ParserNode *> getChildren () { return { nullptr }; }
 };
 
 //
 // Node to hold string value
 //
-class StringValueNode : ValueNode
+class StringValueNode : public ValueNode
 {
 private:
 	std::string value_;
@@ -46,7 +53,7 @@ public:
 //
 // Node to hold integer value node
 //
-class IntegerValueNode : ValueNode
+class IntegerValueNode : public ValueNode
 {
 private:
 	int value_;
@@ -62,7 +69,7 @@ public:
 //
 // Node to hold float value
 //
-class FloatValueNode : ValueNode
+class FloatValueNode : public ValueNode
 {
 private:
 	float value_;
