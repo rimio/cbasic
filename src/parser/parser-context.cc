@@ -3,22 +3,23 @@
 
 ParserContext::ParserContext ()
 {
-	lexer = nullptr;
-	parser = nullptr;
+	lexer_ = nullptr;
+	parser_ = nullptr;
+	root_node_ = nullptr;
 }
 
 ParserContext::~ParserContext ()
 {
-	if (lexer != nullptr)
+	if (lexer_ != nullptr)
 	{
-		delete lexer;
-		lexer = nullptr;
+		delete lexer_;
+		lexer_ = nullptr;
 	}
 
-	if (parser != nullptr)
+	if (parser_ != nullptr)
 	{
-		delete parser;
-		parser = nullptr;
+		delete parser_;
+		parser_ = nullptr;
 	}
 }
 
@@ -33,21 +34,21 @@ int ParserContext::parseFile (std::string &filename)
 	}
 
 	// Allocate lexer
-	if (lexer != nullptr)
+	if (lexer_ != nullptr)
 	{
-		delete lexer;
+		delete lexer_;
 	}
-	lexer = new Lexer (&input_file);
+	lexer_ = new Lexer (&input_file);
 
 	// Allocate parser
-	if (parser != nullptr)
+	if (parser_ != nullptr)
 	{
-		delete parser;
+		delete parser_;
 	}
-	parser = new Parser (*lexer, *this, &root_node);
+	parser_ = new Parser (*lexer_, *this, &root_node_);
 
 	// Parse
-	if (parser->parse () != NO_ERROR)
+	if (parser_->parse () != NO_ERROR)
 	{
 		Error::error ("file parsing failed");
 		return ER_FAILED;
@@ -79,9 +80,9 @@ void ParserContext::printTreeRecursive (std::ostream &stream, int level, ParserN
 
 int ParserContext::printTree (std::ostream &stream)
 {
-	if (root_node != nullptr)
+	if (root_node_ != nullptr)
 	{
-		printTreeRecursive (stream, 0, root_node);
+		printTreeRecursive (stream, 0, root_node_);
 		return NO_ERROR;
 	}
 	else

@@ -12,9 +12,9 @@ using namespace yy;
 class ParserContext
 {
 private:
-	Parser *parser;
-	Lexer *lexer;
-	ParserNode *root_node;
+	Parser *parser_;
+	Lexer *lexer_;
+	ParserNode *root_node_;
 
 	// Print a tree node to a stream and call itself on all children.
 	// "level" determines indentation level and increases with each layer.
