@@ -19,6 +19,8 @@
 "-"								{ return Parser::token::MINUS; }
 "*"								{ return Parser::token::STAR; }
 "/"								{ return Parser::token::SLASH; }
+"\\"							{ return Parser::token::BACKSLASH; }
+[Mm][Oo][Dd]					{ return Parser::token::MODULO; }
 
 [0-9]+							{ yylval->ival = atoi (yytext); return Parser::token::ILITERAL; }
 [0-9]*[.][0-9]+					{ yylval->fval = atof (yytext); return Parser::token::FLITERAL; }

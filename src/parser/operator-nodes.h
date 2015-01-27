@@ -9,7 +9,12 @@
 typedef enum
 {
 	OT_PLUS,
-	OT_MINUS
+	OT_MINUS,
+	OT_MULTIPLICATION,
+	OT_DIVISION,
+	OT_INTDIVISION,
+	OT_MODULO,
+	OT_POWER
 } OperatorType;
 
 //
@@ -67,6 +72,66 @@ public:
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_MINUS; }
+};
+
+//
+// Multiplication operator
+//
+class MultiplicationOperatorNode : public OperatorNode
+{
+public:
+	MultiplicationOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_MULTIPLICATION; }
+};
+
+//
+// Division operator
+//
+class DivisionOperatorNode : public OperatorNode
+{
+public:
+	DivisionOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_DIVISION; }
+};
+
+//
+// Integer division operator
+//
+class IntDivisionOperatorNode : public OperatorNode
+{
+public:
+	IntDivisionOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_INTDIVISION; }
+};
+
+//
+// Modulo operator
+//
+class ModuloOperatorNode : public OperatorNode
+{
+public:
+	ModuloOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_MODULO; }
+};
+
+//
+// Power operator
+//
+class PowerOperatorNode : public OperatorNode
+{
+public:
+	PowerOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_POWER; }
 };
 
 #endif
