@@ -5,7 +5,7 @@
 #include "error/error.h"
 #include "parser.hh"
 #include "lexer.h"
-#include "parser-node.h"
+#include "nodes/parser-node.h"
 
 using namespace yy;
 

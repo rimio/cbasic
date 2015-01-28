@@ -7,11 +7,11 @@
 
 %code requires
 {
-	#include "parser-node.h"
-	#include "value-nodes.h"
-	#include "operator-nodes.h"
-	#include "identifier-node.h"
-	#include "statement-nodes.h"
+	#include "nodes/parser-node.h"
+	#include "nodes/value-nodes.h"
+	#include "nodes/operator-nodes.h"
+	#include "nodes/identifier-node.h"
+	#include "nodes/statement-nodes.h"
 
 	class ParserContext;
 	class Lexer;
