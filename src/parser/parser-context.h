@@ -24,6 +24,9 @@ public:
 	ParserContext ();
 	~ParserContext ();
 
+	// Get the root node
+	ParserNode *getRoot () const { return root_node_; }
+
 	// Parse a file, given the filename
 	int parseFile (std::string& filename);
 

@@ -8,6 +8,18 @@ OperatorNode::~OperatorNode()
 		delete right_;
 }
 
+std::string OperatorNode::print ()
+{
+	if (right_ == nullptr)
+	{
+		return "(" + toString () + left_->print () + ")";
+	}
+	else
+	{
+		return "(" + left_->print () + " " + toString () + " " + right_->print () + ")";
+	}
+}
+
 std::string PlusOperatorNode::toString ()
 {
 	return std::string ("+");

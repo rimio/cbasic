@@ -10,7 +10,9 @@
 typedef enum
 {
 	PT_VALUE,
-	PT_OPERATOR
+	PT_OPERATOR,
+	PT_IDENTIFIER,
+	PT_STATEMENT
 } ParserNodeType;
 
 //
@@ -27,6 +29,9 @@ public:
 
 	// Returns a string representation of the node
 	virtual std::string toString () = 0;
+
+	// Returns a printable representation of the node (and children)
+	virtual std::string print () = 0;
 
 	// Returns the type of parser node
 	virtual ParserNodeType getNodeType () const = 0;

@@ -1,6 +1,11 @@
 #include "value-nodes.h"
 #include "error.h"
 
+std::string ValueNode::print ()
+{
+	return toString ();
+}
+
 StringValueNode::StringValueNode (std::string val)
 {
 	value_ = std::string (val);

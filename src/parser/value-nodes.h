@@ -9,10 +9,10 @@
 //
 typedef enum
 {
-	VT_STRING,
-	VT_INT,
-	VT_FLOAT
-} ValueType;
+	BT_STRING,
+	BT_INT,
+	BT_FLOAT
+} BasicType;
 
 //
 // Node to hold intermediate values (like literals and folded results)
@@ -25,10 +25,13 @@ protected:
 
 public:
 	// Return the type of the value
-	virtual ValueType getType () = 0;
+	virtual BasicType getType () = 0;
 
 	// This is a value node
 	ParserNodeType getNodeType () const { return PT_VALUE; }
+
+	// All value nodes will be printed as is
+	std::string print ();
 
 	// No children for value nodes
 	std::list<ParserNode *> getChildren () { return { nullptr }; }
@@ -47,7 +50,7 @@ public:
 	std::string getValue ();
 
 	std::string toString ();
-	ValueType getType () { return VT_STRING; }
+	BasicType getType () { return BT_STRING; }
 };
 
 //
@@ -63,7 +66,7 @@ public:
 	int getValue () const { return value_; }
 
 	std::string toString ();
-	ValueType getType () { return VT_INT; }
+	BasicType getType () { return BT_INT; }
 };
 
 //
@@ -79,7 +82,7 @@ public:
 	float getValue () const { return value_; }
 
 	std::string toString ();
-	ValueType getType () { return VT_FLOAT; }
+	BasicType getType () { return BT_FLOAT; }
 };
 
 #endif

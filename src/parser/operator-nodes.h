@@ -44,6 +44,9 @@ public:
 	// This is an operator node
 	ParserNodeType getNodeType () const { return PT_OPERATOR; }
 
+	// Print expression
+	std::string print ();
+
 	// Return children
 	std::list<ParserNode *> getChildren () { return { left_, right_ }; };
 };

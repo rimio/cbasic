@@ -10,6 +10,8 @@
 	#include "parser-node.h"
 	#include "value-nodes.h"
 	#include "operator-nodes.h"
+	#include "identifier-node.h"
+	#include "statement-nodes.h"
 
 	class ParserContext;
 	class Lexer;
@@ -42,11 +44,12 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 
 	ParserNode *parser_node;
 	ValueNode *value_node;
-	OperatorNode *operator_node;
+	IdentifierNode *identifier_node;
 }
 
 %token BACKSLASH
 %token END 0
+%token EQUAL
 %token MINUS
 %token MODULO
 %token NEWLINE
@@ -58,8 +61,13 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %token <ival> ILITERAL
 %token <fval> FLITERAL
 %token <sval> SLITERAL
+%token <sval> IIDENTIFIER
+%token <sval> FIDENTIFIER
+%token <sval> SIDENTIFIER
 
 
+%type <parser_node>		expression
+%type <identifier_node>	identifier
 %type <parser_node>		intdiv_op
 %type <value_node>		literal
 %type <parser_node>		modulo_op
@@ -68,18 +76,32 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %type <parser_node>		operand
 %type <parser_node>		plus_minus_op
 %type <parser_node>		power_op
-%type <parser_node>		program
+%type <parser_node>		statement
 
 %%
 
 program
-	: plus_minus_op
+	: statement
 		{
 			*root_node = $1;
 		}
-	| plus_minus_op NEWLINE
+	| statement NEWLINE
 		{
 			*root_node = $1;
+		}
+	;
+
+statement
+	: identifier EQUAL expression
+		{
+			$$ = new AssignmentStatementNode ($1, $3);
+		}
+	;
+
+expression
+	: plus_minus_op
+		{
+			$$ = $1;
 		}
 	;
 
@@ -172,6 +194,25 @@ operand
 	: literal
 		{
 			$$ = $1;
+		}
+	| identifier
+		{
+			$$ = $1;
+		}
+	;
+
+identifier
+	: IIDENTIFIER
+		{
+			$$ = new IdentifierNode (*$1, BT_INT);
+		}
+	| FIDENTIFIER
+		{
+			$$ = new IdentifierNode (*$1, BT_FLOAT);
+		}
+	| SIDENTIFIER
+		{
+			$$ = new IdentifierNode (*$1, BT_STRING);
 		}
 	;
 
