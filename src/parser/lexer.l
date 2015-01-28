@@ -12,7 +12,16 @@
 %option yyclass="Lexer"
 %option c++
 
+%{
+static yy::location loc;
+#define YY_USER_ACTION loc.columns(yyleng);
+%}
+
 %%
+
+%{
+loc.step();
+%}
 
 "^"								{ return Parser::token::POWER; }
 "+"								{ return Parser::token::PLUS; }
@@ -33,9 +42,9 @@
 [a-zA-Z][a-zA-Z0-9.]*[$]			{ yylval->sval = new std::string (yytext, strlen (yytext) - 1); return Parser::token::SIDENTIFIER; }
 [a-zA-Z][a-zA-Z0-9.]*				{ yylval->sval = new std::string (yytext); return Parser::token::FIDENTIFIER; }
 
-[ \t]							{ /* eat them */ }
-\n								{ return Parser::token::NEWLINE; }
+[ \t]							{ /* eat them */ loc.step (); }
+[\n]+							{ loc.lines (yyleng); loc.step (); return Parser::token::NEWLINE; }
 
-.								{ Error::syntaxError ("unrecognized token '" + std::string (yytext) + "'", 0, 0); }
+.								{ Error::syntaxError ("unrecognized token '" + std::string (yytext) + "'", loc.begin.line, loc.begin.column); }
 
 %%

@@ -17,9 +17,16 @@ class StatementNode : public ParserNode
 {
 protected:
 	// Hidden constructor
-	StatementNode () { };
+	StatementNode () : next_ (nullptr) { };
+
+	// Next statement
+	StatementNode *next_;
 
 public:
+	// Next node getters and setters
+	StatementNode *getNext () const { return next_; }
+	void setNext (StatementNode *next) { next_ = next; }
+
 	// Get statement type
 	virtual StatementType getStatementType () const = 0;
 

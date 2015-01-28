@@ -4,6 +4,7 @@
 %debug
 %defines
 %define parser_class_name {Parser}
+%define parse.error verbose
 
 %code requires
 {
@@ -45,6 +46,7 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 	ParserNode *parser_node;
 	ValueNode *value_node;
 	IdentifierNode *identifier_node;
+	StatementNode *statement_node;
 }
 
 %token BACKSLASH
@@ -76,18 +78,43 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %type <parser_node>		operand
 %type <parser_node>		plus_minus_op
 %type <parser_node>		power_op
-%type <parser_node>		statement
+%type <statement_node>	statement
+%type <statement_node>	statement_list
+%type <statement_node>	statement_with_newline
 
 %%
 
 program
-	: statement
+	: statement END
 		{
 			*root_node = $1;
 		}
-	| statement NEWLINE
+	| statement_list END
 		{
 			*root_node = $1;
+		}
+	;
+
+statement_list
+	: statement_with_newline statement_list
+		{
+			$$ = $1;
+			$$->setNext ($2);
+		}
+	| statement_with_newline
+		{
+			$$ = $1;
+		}
+	;
+
+statement_with_newline
+	: statement NEWLINE
+		{
+			$$ = $1;
+		}
+	| NEWLINE statement
+		{
+			$$ = $2;
 		}
 	;
 

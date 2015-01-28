@@ -181,9 +181,11 @@ int main (int argc, char **argv)
 		// Error should have been printed
 		return ER_FAILED;
 	}
-	std::cout << "AST:" << std::endl;
+
+	std::cout << std::endl << "Reprinted program: " << std::endl;
+	pc->printProgram (std::cout);
+	std::cout << std::endl << std::endl << "AST:" << std::endl;
 	pc->printTree (std::cout);
-	std::cout << std::endl << std::endl << "Reprinted program: " << std::endl << pc->getRoot ()->print() << std::endl;
 
 	// All ok
 	return 0;

@@ -76,6 +76,13 @@ void ParserContext::printTreeRecursive (std::ostream &stream, int level, ParserN
 	{
 		printTreeRecursive (stream, level+1, *it);
 	}
+
+	// Print list
+	if (node->getNodeType () == PT_STATEMENT)
+	{
+		StatementNode *st = (StatementNode *) node;
+		printTreeRecursive (stream, level, st->getNext ());
+	}
 }
 
 int ParserContext::printTree (std::ostream &stream)
@@ -83,6 +90,20 @@ int ParserContext::printTree (std::ostream &stream)
 	if (root_node_ != nullptr)
 	{
 		printTreeRecursive (stream, 0, root_node_);
+		return NO_ERROR;
+	}
+	else
+	{
+		Error::internalError ("empty parse tree, can't print");
+		return ER_FAILED;
+	}
+}
+
+int ParserContext::printProgram (std::ostream &stream)
+{
+	if (root_node_ != nullptr)
+	{
+		stream << root_node_->print ();
 		return NO_ERROR;
 	}
 	else

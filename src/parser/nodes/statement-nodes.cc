@@ -7,5 +7,10 @@ std::string AssignmentStatementNode::toString ()
 
 std::string AssignmentStatementNode::print ()
 {
-	return identifier_->print () + " " + toString () + " " + expression_->print ();
+	std::string this_stmt = identifier_->print () + " " + toString () + " " + expression_->print ();
+	if (next_ != nullptr)
+	{
+		this_stmt = this_stmt + "\n" + next_->print ();
+	}
+	return this_stmt;
 }

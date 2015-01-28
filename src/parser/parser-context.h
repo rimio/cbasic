@@ -32,6 +32,9 @@ public:
 
 	// Print the parse tree
 	int printTree (std::ostream &stream);
+
+	// Print the program (from AST)
+	int printProgram (std::ostream &stream);
 };
 
 #endif
