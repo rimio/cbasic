@@ -38,6 +38,8 @@ set (HEADER_FILES
 	${SOURCE_DIR}/configure.h
 	${SOURCE_DIR}/error/error.h
 	${SOURCE_DIR}/parser/parser-context.h
+	${SOURCE_DIR}/parser/tree-walker.h
+	${SOURCE_DIR}/parser/constant-folding.h
 
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.h
@@ -56,6 +58,8 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/cbasic.cc
 	${SOURCE_DIR}/error/error.cc
 	${SOURCE_DIR}/parser/parser-context.cc
+	${SOURCE_DIR}/parser/tree-walker.cc
+	${SOURCE_DIR}/parser/constant-folding.cc
 	
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.cc

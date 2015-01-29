@@ -6,6 +6,7 @@
 #include "configure.h"
 #include "error/error.h"
 #include "parser/parser-context.h"
+#include "parser/constant-folding.h"
 
 //
 // getopt_long options
@@ -186,6 +187,13 @@ int main (int argc, char **argv)
 	pc->printProgram (std::cout);
 	std::cout << std::endl << std::endl << "AST:" << std::endl;
 	pc->printTree (std::cout);
+
+	// Walk check
+	std::cout << std::endl << "Original program: " << std::endl;
+	pc->printProgram (std::cout);
+	TreeWalker::leafToRoot (pc->getRoot (), fold_constants, false);
+	std::cout << std::endl << std::endl << "Optimized program: " << std::endl;
+	pc->printProgram (std::cout);
 
 	// All ok
 	return 0;

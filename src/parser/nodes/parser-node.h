@@ -45,6 +45,9 @@ public:
 
 	// Returns a list of all children
 	virtual std::list<ParserNode *> getChildren () = 0;
+
+	// Returns a list of pointers to all children addresses
+	virtual std::list<ParserNode **> getChildrenReferences () = 0;
 };
 
 #endif

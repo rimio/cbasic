@@ -28,6 +28,7 @@ public:
 
 	// No children
 	std::list<ParserNode *> getChildren () { return { nullptr }; }
+	std::list<ParserNode **> getChildrenReferences () { return { nullptr }; }
 };
 
 #endif

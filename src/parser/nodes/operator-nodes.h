@@ -59,6 +59,7 @@ public:
 
 	// Return children
 	std::list<ParserNode *> getChildren () { return { left_, right_ }; };
+	std::list<ParserNode **> getChildrenReferences () { return { &left_, &right_ }; };
 };
 
 //

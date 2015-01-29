@@ -56,6 +56,7 @@ public:
 	std::string toString ();
 	std::string print ();
 	std::list<ParserNode *> getChildren () { return { identifier_, expression_ }; }
+	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &identifier_, &expression_ }; }
 };
 
 //
@@ -83,6 +84,7 @@ public:
 	std::string toString ();
 	std::string print ();
 	std::list<ParserNode *> getChildren () { return { identifier_, dimension_list_ }; }
+	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &identifier_, &dimension_list_ }; }
 };
 
 #endif
