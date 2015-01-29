@@ -7,7 +7,8 @@
 
 typedef enum
 {
-	ST_ASSIGNMENT
+	ST_ASSIGNMENT,
+	ST_ALLOCATION
 } StatementType;
 
 //
@@ -17,16 +18,9 @@ class StatementNode : public ParserNode
 {
 protected:
 	// Hidden constructor
-	StatementNode () : next_ (nullptr) { };
-
-	// Next statement
-	StatementNode *next_;
+	StatementNode () { };
 
 public:
-	// Next node getters and setters
-	StatementNode *getNext () const { return next_; }
-	void setNext (StatementNode *next) { next_ = next; }
-
 	// Get statement type
 	virtual StatementType getStatementType () const = 0;
 
@@ -62,6 +56,33 @@ public:
 	std::string toString ();
 	std::string print ();
 	std::list<ParserNode *> getChildren () { return { identifier_, expression_ }; }
+};
+
+//
+// Allocation (DIM) statement
+//
+class AllocationStatementNode : public StatementNode
+{
+private:
+	// Hidden constructor
+	AllocationStatementNode () { };
+
+	// Left hand side - identifier
+	IdentifierNode *identifier_;
+
+	// Right hand side - dimensions list
+	ParserNode *dimension_list_;
+
+public:
+	AllocationStatementNode (IdentifierNode *iden, ParserNode *dims) : identifier_ (iden), dimension_list_ (dims) { };
+
+	// Implementations of StatementNode pure virtual functions
+	StatementType getStatementType () const { return ST_ALLOCATION; }
+
+	// Implementations of ParserNode pure virtual functions
+	std::string toString ();
+	std::string print ();
+	std::list<ParserNode *> getChildren () { return { identifier_, dimension_list_ }; }
 };
 
 #endif

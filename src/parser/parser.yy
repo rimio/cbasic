@@ -49,16 +49,30 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 	StatementNode *statement_node;
 }
 
+%token AND
 %token BACKSLASH
+%token COMMA
+%token DIM
 %token END 0
 %token EQUAL
+%token GT
+%token GT_EQ
+%token LET
+%token LT
+%token LT_EQ
 %token MINUS
 %token MODULO
 %token NEWLINE
+%token NOT
+%token NOT_EQUAL
+%token OR
+%token PAR_CLOSE
+%token PAR_OPEN
 %token PLUS
 %token POWER
 %token SLASH
 %token STAR
+%token XOR
 
 %token <ival> ILITERAL
 %token <fval> FLITERAL
@@ -68,14 +82,21 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %token <sval> SIDENTIFIER
 
 
+%type <statement_node>	allocation_statement_part
+%type <statement_node>	allocation_statement_part_list
+%type <parser_node>		and_op
+%type <parser_node>		comparison_op
 %type <parser_node>		expression
+%type <parser_node>		expression_list
 %type <identifier_node>	identifier
 %type <parser_node>		intdiv_op
 %type <value_node>		literal
 %type <parser_node>		modulo_op
 %type <parser_node>		mul_div_op
 %type <parser_node>		negation_op
+%type <parser_node>		not_op
 %type <parser_node>		operand
+%type <parser_node>		or_xor_op
 %type <parser_node>		plus_minus_op
 %type <parser_node>		power_op
 %type <statement_node>	statement
@@ -85,7 +106,11 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %%
 
 program
-	: statement END
+	: statement_with_newline END
+		{
+			*root_node = $1;
+		}
+	| statement END
 		{
 			*root_node = $1;
 		}
@@ -99,7 +124,15 @@ statement_list
 	: statement_with_newline statement_list
 		{
 			$$ = $1;
-			$$->setNext ($2);
+
+			// Some statement rules like the allocation statement can generate node lists.
+			// Walk to end and chain.
+			ParserNode *list = $$;
+			while (list->getNext () != nullptr)
+			{
+				list = list->getNext ();
+			}
+			list->setNext ($2);
 		}
 	| statement_with_newline
 		{
@@ -119,14 +152,117 @@ statement_with_newline
 	;
 
 statement
-	: identifier EQUAL expression
+	: LET identifier EQUAL expression
 		{
-			$$ = new AssignmentStatementNode ($1, $3);
+			$$ = new AssignmentStatementNode ($2, $4);
+		}
+	| DIM allocation_statement_part_list
+		{
+			$$ = $2;
+		}
+	;
+
+allocation_statement_part_list
+	: allocation_statement_part COMMA allocation_statement_part_list
+		{
+			$$ = $1;
+			$$->setNext ($3);
+		}
+	| allocation_statement_part
+		{
+			$$ = $1;
+		}
+	;
+
+allocation_statement_part
+	: identifier PAR_OPEN expression_list PAR_CLOSE
+		{
+			$$ = new AllocationStatementNode ($1, $3);
+		}
+	;
+
+expression_list
+	: expression COMMA expression_list
+		{
+			$$ = $1;
+			$$->setNext ($3);
+		}
+	| expression
+		{
+			$$ = $1;
 		}
 	;
 
 expression
-	: plus_minus_op
+	: or_xor_op
+		{
+			$$ = $1;
+		}
+	;
+
+or_xor_op
+	: or_xor_op OR or_xor_op
+		{
+			$$ = new OrOperatorNode ($1, $3);
+		}
+	| or_xor_op XOR or_xor_op
+		{
+			$$ = new XorOperatorNode ($1, $3);
+		}
+	| and_op
+		{
+			$$ = $1;
+		}
+	;
+
+and_op
+	: and_op AND and_op
+		{
+			$$ = new AndOperatorNode ($1, $3);
+		}
+	| not_op
+		{
+			$$ = $1;
+		}
+	;
+
+not_op
+	: NOT not_op
+		{
+			$$ = new NotOperatorNode ($2);
+		}
+	| comparison_op
+		{
+			$$ = $1;
+		}
+	;
+
+comparison_op
+	: comparison_op LT comparison_op
+		{	
+			$$ = new LessThanOperatorNode ($1, $3);
+		}
+	| comparison_op LT_EQ comparison_op
+		{
+			$$ = new LessThanOrEqualOperatorNode ($1, $3);
+		}
+	| comparison_op GT comparison_op
+		{
+			$$ = new GreaterThanOperatorNode ($1, $3);
+		}
+	| comparison_op GT_EQ comparison_op
+		{
+			$$ = new GreaterThanOrEqualOperatorNode ($1, $3);
+		}
+	| comparison_op EQUAL comparison_op
+		{
+			$$ = new EqualOperatorNode ($1, $3);
+		}
+	| comparison_op NOT_EQUAL comparison_op
+		{
+			$$ = new NotEqualOperatorNode ($1, $3);
+		}
+	| plus_minus_op
 		{
 			$$ = $1;
 		}

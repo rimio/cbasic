@@ -12,7 +12,7 @@ std::string OperatorNode::print ()
 {
 	if (right_ == nullptr)
 	{
-		return "(" + toString () + left_->print () + ")";
+		return "(" + toString () + " " + left_->print () + ")";
 	}
 	else
 	{
@@ -53,4 +53,54 @@ std::string ModuloOperatorNode::toString ()
 std::string PowerOperatorNode::toString ()
 {
 	return std::string ("^");
+}
+
+std::string GreaterThanOperatorNode::toString ()
+{
+	return std::string (">");
+}
+
+std::string LessThanOperatorNode::toString ()
+{
+	return std::string ("<");
+}
+
+std::string GreaterThanOrEqualOperatorNode::toString ()
+{
+	return std::string (">=");
+}
+
+std::string LessThanOrEqualOperatorNode::toString ()
+{
+	return std::string ("<=");
+}
+
+std::string EqualOperatorNode::toString ()
+{
+	return std::string ("=");
+}
+
+std::string NotEqualOperatorNode::toString ()
+{
+	return std::string ("<>");
+}
+
+std::string NotOperatorNode::toString ()
+{
+	return std::string ("not");
+}
+
+std::string AndOperatorNode::toString ()
+{
+	return std::string ("and");
+}
+
+std::string OrOperatorNode::toString ()
+{
+	return std::string ("or");
+}
+
+std::string XorOperatorNode::toString ()
+{
+	return std::string ("xor");
 }

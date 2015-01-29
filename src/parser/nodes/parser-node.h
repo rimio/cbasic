@@ -22,10 +22,17 @@ class ParserNode
 {
 protected:
 	// Disallow instances of ParserNode
-	ParserNode () { };
+	ParserNode () : next_ (nullptr) { };
+
+	// Next node in list
+	ParserNode *next_;
 
 public:
 	virtual ~ParserNode () { };
+
+	// Next node getters and setters
+	ParserNode *getNext () const { return next_; }
+	void setNext (ParserNode *next) { next_ = next; }
 
 	// Returns a string representation of the node
 	virtual std::string toString () = 0;

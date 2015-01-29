@@ -78,11 +78,7 @@ void ParserContext::printTreeRecursive (std::ostream &stream, int level, ParserN
 	}
 
 	// Print list
-	if (node->getNodeType () == PT_STATEMENT)
-	{
-		StatementNode *st = (StatementNode *) node;
-		printTreeRecursive (stream, level, st->getNext ());
-	}
+	printTreeRecursive (stream, level, node->getNext ());
 }
 
 int ParserContext::printTree (std::ostream &stream)

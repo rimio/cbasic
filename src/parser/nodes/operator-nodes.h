@@ -14,7 +14,17 @@ typedef enum
 	OT_DIVISION,
 	OT_INTDIVISION,
 	OT_MODULO,
-	OT_POWER
+	OT_POWER,
+	OT_GT,
+	OT_LT,
+	OT_GT_EQ,
+	OT_LT_EQ,
+	OT_EQUAL,
+	OT_NOT_EQUAL,
+	OT_NOT,
+	OT_AND,
+	OT_OR,
+	OT_XOR
 } OperatorType;
 
 //
@@ -136,5 +146,126 @@ public:
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_POWER; }
 };
+
+//
+// Greater than operator
+//
+class GreaterThanOperatorNode : public OperatorNode
+{
+public:
+	GreaterThanOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_GT; }
+};
+
+//
+// Less than operator
+//
+class LessThanOperatorNode : public OperatorNode
+{
+public:
+	LessThanOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_LT; }
+};
+
+//
+// Greater than or equal operator
+//
+class GreaterThanOrEqualOperatorNode : public OperatorNode
+{
+public:
+	GreaterThanOrEqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_GT_EQ; }
+};
+
+//
+// Less than or equal operator
+//
+class LessThanOrEqualOperatorNode : public OperatorNode
+{
+public:
+	LessThanOrEqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_LT_EQ; }
+};
+
+//
+// Equal operator
+//
+class EqualOperatorNode : public OperatorNode
+{
+public:
+	EqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_EQUAL; }
+};
+
+//
+// Not equal operator
+//
+class NotEqualOperatorNode : public OperatorNode
+{
+public:
+	NotEqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_NOT_EQUAL; }
+};
+
+//
+// NOT operator
+//
+class NotOperatorNode : public OperatorNode
+{
+public:
+	NotOperatorNode (ParserNode *l) : OperatorNode (l, nullptr) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_NOT; }
+};
+
+//
+// AND operator
+//
+class AndOperatorNode : public OperatorNode
+{
+public:
+	AndOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_AND; }
+};
+
+//
+// OR operator
+//
+class OrOperatorNode : public OperatorNode
+{
+public:
+	OrOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_OR; }
+};
+
+//
+// XOR operator
+//
+class XorOperatorNode : public OperatorNode
+{
+public:
+	XorOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_XOR; }
+};
+
 
 #endif
