@@ -7,6 +7,8 @@
 #include "error/error.h"
 #include "parser/parser-context.h"
 #include "parser/constant-folding.h"
+#include "parser/find-symbols.h"
+#include "symbols/symbol-table.h"
 
 //
 // getopt_long options
@@ -191,9 +193,16 @@ int main (int argc, char **argv)
 	// Walk check
 	std::cout << std::endl << "Original program: " << std::endl;
 	pc->printProgram (std::cout);
+
 	TreeWalker::leafToRoot (pc->getRoot (), fold_constants, false);
+
 	std::cout << std::endl << std::endl << "Optimized program: " << std::endl;
 	pc->printProgram (std::cout);
+
+	// Find symbols
+	TreeWalker::leafToRoot (pc->getRoot (), find_symbols, false);
+	std::cout << std::endl << std::endl << "Symbol table: " << std::endl;
+	SymbolTable::debugPrint ();
 
 	// All ok
 	return 0;

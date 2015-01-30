@@ -3,16 +3,7 @@
 
 #include <string>
 #include "parser-node.h"
-
-//
-// Enumeration of possible types of variables and the values of ValueNode
-//
-typedef enum
-{
-	BT_STRING,
-	BT_INT,
-	BT_FLOAT
-} BasicType;
+#include "symbols/basic-types.h"
 
 //
 // Node to hold intermediate values (like literals and folded results)

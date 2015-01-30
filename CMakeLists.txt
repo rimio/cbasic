@@ -39,7 +39,12 @@ set (HEADER_FILES
 	${SOURCE_DIR}/error/error.h
 	${SOURCE_DIR}/parser/parser-context.h
 	${SOURCE_DIR}/parser/tree-walker.h
+	${SOURCE_DIR}/symbols/symbol-table.h
+	${SOURCE_DIR}/symbols/basic-types.h
+
+	# parser operations
 	${SOURCE_DIR}/parser/constant-folding.h
+	${SOURCE_DIR}/parser/find-symbols.h
 
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.h
@@ -59,7 +64,12 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/error/error.cc
 	${SOURCE_DIR}/parser/parser-context.cc
 	${SOURCE_DIR}/parser/tree-walker.cc
+	${SOURCE_DIR}/symbols/symbol-table.cc
+	${SOURCE_DIR}/symbols/basic-types.cc
+
+	# parser operations
 	${SOURCE_DIR}/parser/constant-folding.cc
+	${SOURCE_DIR}/parser/find-symbols.cc
 	
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.cc

@@ -46,7 +46,7 @@ private:
 public:
 	AssignmentStatementNode (IdentifierNode *iden, ParserNode *expr) : identifier_ (iden), expression_ (expr) { }
 
-	ParserNode *getIdentifier () const { return identifier_; }
+	IdentifierNode *getIdentifier () const { return identifier_; }
 	ParserNode *getExpression () const { return expression_; }
 
 	// Implementations of StatementNode pure virtual functions
@@ -76,6 +76,9 @@ private:
 
 public:
 	AllocationStatementNode (IdentifierNode *iden, ParserNode *dims) : identifier_ (iden), dimension_list_ (dims) { };
+
+	IdentifierNode *getIdentifier () const { return identifier_; }
+	ParserNode *getDimensionList () const { return dimension_list_; }
 
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_ALLOCATION; }

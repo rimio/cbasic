@@ -2,6 +2,7 @@
 #include <cassert>
 #include "nodes/operator-nodes.h"
 #include "nodes/value-nodes.h"
+#include "symbols/basic-types.h"
 
 ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 {

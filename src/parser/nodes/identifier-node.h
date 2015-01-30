@@ -3,7 +3,7 @@
 
 #include <string>
 #include "parser-node.h"
-#include "value-nodes.h"
+#include "symbols/basic-types.h"
 
 //
 // Node for an identifier
@@ -22,6 +22,10 @@ public:
 
 	std::string toString ();
 	std::string print ();
+
+	// Get name type of identifier
+	std::string getName () const { return name_; }
+	BasicType getType () const { return type_; }
 
 	// This is an identifier
 	ParserNodeType getNodeType () const { return PT_IDENTIFIER; }
