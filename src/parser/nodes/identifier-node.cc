@@ -1,5 +1,6 @@
 #include "identifier-node.h"
 #include <cassert>
+#include "error/error.h"
 
 std::string IdentifierNode::toString ()
 {
@@ -23,4 +24,10 @@ std::string IdentifierNode::toString ()
 std::string IdentifierNode::print ()
 {
 	return toString ();
+}
+
+void IdentifierNode::setType (BasicType type)
+{
+	assert (false);
+	Error::internalError ("attempting to set type of IdentifierNode");
 }

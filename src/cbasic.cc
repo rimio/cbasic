@@ -9,6 +9,7 @@
 #include "parser/constant-folding.h"
 #include "parser/find-symbols.h"
 #include "symbols/symbol-table.h"
+#include "parser/type-checking.h"
 
 //
 // getopt_long options
@@ -185,24 +186,30 @@ int main (int argc, char **argv)
 		return ER_FAILED;
 	}
 
-	std::cout << std::endl << "Reprinted program: " << std::endl;
-	pc->printProgram (std::cout);
+	// Print AST
 	std::cout << std::endl << std::endl << "AST:" << std::endl;
 	pc->printTree (std::cout);
 
-	// Walk check
+	// Print original program
 	std::cout << std::endl << "Original program: " << std::endl;
-	pc->printProgram (std::cout);
-
-	TreeWalker::leafToRoot (pc->getRoot (), fold_constants, false);
-
-	std::cout << std::endl << std::endl << "Optimized program: " << std::endl;
 	pc->printProgram (std::cout);
 
 	// Find symbols
 	TreeWalker::leafToRoot (pc->getRoot (), find_symbols, false);
+
+	// Check types
+	TreeWalker::leafToRoot (pc->getRoot (), check_types, false);
+
+	// Fold constants
+	TreeWalker::leafToRoot (pc->getRoot (), fold_constants, false);
+
+	// Print symbol table
 	std::cout << std::endl << std::endl << "Symbol table: " << std::endl;
 	SymbolTable::debugPrint ();
+
+	// Print final program before IL code generation
+	std::cout << std::endl << std::endl << "Final program: " << std::endl;
+	pc->printProgram (std::cout);
 
 	// All ok
 	return 0;

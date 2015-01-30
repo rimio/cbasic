@@ -24,13 +24,14 @@ typedef enum
 	OT_NOT,
 	OT_AND,
 	OT_OR,
-	OT_XOR
+	OT_XOR,
+	OT_CAST
 } OperatorType;
 
 //
 // Base class for operators
 //
-class OperatorNode : public ParserNode
+class OperatorNode : public TypedParserNode
 {
 protected:
 	// Hidden constructors
@@ -40,6 +41,9 @@ protected:
 	// Operands
 	ParserNode *left_;
 	ParserNode *right_;
+
+	// Return type
+	BasicType return_type_;
 
 public:
 	virtual ~OperatorNode ();
@@ -53,6 +57,10 @@ public:
 
 	// This is an operator node
 	ParserNodeType getNodeType () const { return PT_OPERATOR; }
+
+	// Return type
+	BasicType getType () const { return return_type_; }
+	void setType (BasicType type) { return_type_ = type; }
 
 	// Print expression
 	std::string print ();
@@ -266,6 +274,18 @@ public:
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_XOR; }
+};
+
+//
+// Internal CAST operator
+//
+class CastOperatorNode : public OperatorNode
+{
+public:
+	CastOperatorNode (ParserNode *l, BasicType ttype) : OperatorNode (l, nullptr), return_type_ (ttype) { };
+
+	std::string toString ();
+	OperatorType getOperatorType () const { return OT_CAST; }
 };
 
 

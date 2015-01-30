@@ -1,9 +1,16 @@
 #include "value-nodes.h"
-#include "error.h"
+#include <cassert>
+#include "error/error.h"
 
 std::string ValueNode::print ()
 {
 	return toString ();
+}
+
+void ValueNode::setType (BasicType type)
+{
+	assert (false);
+	Error::internalError ("attempting to set type of ValueNode");
 }
 
 StringValueNode::StringValueNode (std::string val)

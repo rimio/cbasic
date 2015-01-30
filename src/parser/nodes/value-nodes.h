@@ -3,26 +3,25 @@
 
 #include <string>
 #include "parser-node.h"
-#include "symbols/basic-types.h"
 
 //
 // Node to hold intermediate values (like literals and folded results)
 //
-class ValueNode : public ParserNode
+class ValueNode : public TypedParserNode
 {
 protected:
 	// Hidden constructor
 	ValueNode () { };
 
 public:
-	// Return the type of the value
-	virtual BasicType getType () = 0;
-
 	// This is a value node
 	ParserNodeType getNodeType () const { return PT_VALUE; }
 
 	// All value nodes will be printed as is
 	std::string print ();
+
+	// All attempts to set type must fail
+	void setType (BasicType type);
 
 	// No children for value nodes
 	std::list<ParserNode *> getChildren () { return { nullptr }; }
@@ -42,7 +41,7 @@ public:
 	std::string getValue ();
 
 	std::string toString ();
-	BasicType getType () { return BT_STRING; }
+	BasicType getType () const { return BT_STRING; }
 };
 
 //
@@ -58,7 +57,7 @@ public:
 	int getValue () const { return value_; }
 
 	std::string toString ();
-	BasicType getType () { return BT_INT; }
+	BasicType getType () const { return BT_INT; }
 };
 
 //
@@ -74,7 +73,7 @@ public:
 	float getValue () const { return value_; }
 
 	std::string toString ();
-	BasicType getType () { return BT_FLOAT; }
+	BasicType getType () const { return BT_FLOAT; }
 };
 
 #endif

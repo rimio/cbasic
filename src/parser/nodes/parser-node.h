@@ -3,6 +3,7 @@
 
 #include <string>
 #include <list>
+#include "symbols/basic-types.h"
 
 //
 // Parser node types
@@ -48,6 +49,16 @@ public:
 
 	// Returns a list of pointers to all children addresses
 	virtual std::list<ParserNode **> getChildrenReferences () = 0;
+};
+
+//
+// Generic typed parser node that defines the getType () member for expression components and such
+//
+class TypedParserNode : public ParserNode
+{
+public:
+	virtual BasicType getType () const = 0;
+	virtual void setType (BasicType type) = 0;
 };
 
 #endif

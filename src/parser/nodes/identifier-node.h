@@ -8,7 +8,7 @@
 //
 // Node for an identifier
 //
-class IdentifierNode : public ParserNode
+class IdentifierNode : public TypedParserNode
 {
 private:
 	// Name of identifier, excluding type suffix
@@ -26,6 +26,9 @@ public:
 	// Get name type of identifier
 	std::string getName () const { return name_; }
 	BasicType getType () const { return type_; }
+
+	// Setting the type should be disallowed
+	void setType (BasicType type);
 
 	// This is an identifier
 	ParserNodeType getNodeType () const { return PT_IDENTIFIER; }
