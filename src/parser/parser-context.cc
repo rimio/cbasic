@@ -99,7 +99,7 @@ int ParserContext::printProgram (std::ostream &stream)
 {
 	if (root_node_ != nullptr)
 	{
-		stream << root_node_->print ();
+		stream << root_node_->print () << std::endl;
 		return NO_ERROR;
 	}
 	else

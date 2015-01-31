@@ -13,13 +13,21 @@ ParserNode *find_symbols (ParserNode *node, struct TreeWalkContext *context)
 		if (st->getStatementType () == ST_ASSIGNMENT)
 		{
 			IdentifierNode *id = ((AssignmentStatementNode *) st)->getIdentifier ();
-			SymbolTable::addSymbol (new VariableSymbol (id->getName (), "", id->getType ()));
+			if (!SymbolTable::addSymbol (new VariableSymbol (id->getName (), "", id->getType ())))
+			{
+				Error::semanticError ("symbol '" + id->getName () + "' already declared in the same scope", node);
+				// TODO: error case
+			}
 		}
 
 		if (st->getStatementType () == ST_ALLOCATION)
 		{
 			IdentifierNode *id = ((AllocationStatementNode *) st)->getIdentifier ();
-			SymbolTable::addSymbol (new VariableSymbol (id->getName (), "", id->getType ()));
+			if (!SymbolTable::addSymbol (new VariableSymbol (id->getName (), "", id->getType ())))
+			{
+				Error::semanticError ("symbol '" + id->getName () + "' already declared in the same scope", node);
+				// TODO: error case
+			}
 		}
 	}
 

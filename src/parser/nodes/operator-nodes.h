@@ -185,6 +185,7 @@ class IntDivisionOperatorNode : public ArithmeticOperatorNode
 public:
 	IntDivisionOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
+	// TODO: figure out type inference
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_INTDIVISION; }
 };
@@ -197,6 +198,7 @@ class ModuloOperatorNode : public ArithmeticOperatorNode
 public:
 	ModuloOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
+	// TODO: figure out type inference
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_MODULO; }
 };

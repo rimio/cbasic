@@ -1,4 +1,5 @@
 #include "operator-nodes.h"
+#include <cassert>
 
 OperatorNode::~OperatorNode()
 {
@@ -28,13 +29,20 @@ int ArithmeticOperatorNode::inferType ()
 		Error::semanticError ("arithmetic operation not allowed on STRING type", getLeft ());
 		return ER_FAILED;
 	}
-	if (right_->getType () == BT_STRING)
+	if (right_ != nullptr && right_->getType () == BT_STRING)
 	{
 		Error::semanticError ("arithmetic operation not allowed on STRING type", getRight ());
 		return ER_FAILED;
 	}
 
-	// Operation on INT and FLOAT
+	// Unary operator
+	if (right_ == nullptr)
+	{
+		setType (left_->getType ());
+		return NO_ERROR;
+	}
+
+	// Operation on INT or FLOAT
 	if (left_->getType () == right_->getType ())
 	{
 		// Non-mixed operation
@@ -43,7 +51,10 @@ int ArithmeticOperatorNode::inferType ()
 	}
 	else
 	{
-		// Mixed operation, apply cast
+		// Mixed operation, cast to float
+		setType (BT_FLOAT);
+
+		// Apply cast
 		if (left_->getType() == BT_INT)
 		{
 			CastOperatorNode *cast = new CastOperatorNode (left_, BT_FLOAT);
@@ -64,25 +75,88 @@ int ArithmeticOperatorNode::inferType ()
 
 int RelationalOperatorNode::inferType ()
 {
-	return NO_ERROR;
+	// We know for sure the return type
+	setType (BT_INT);
+
+	if (right_ == nullptr)
+	{
+		assert (false);
+		Error::internalError ("invalid unary relational operator found");
+		return ER_FAILED;
+	}
+
+	if (left_->getType () == right_->getType ())
+	{
+		// Non-mixed operation
+		return NO_ERROR;
+	}
+	else
+	{
+		// Disallow string types
+		if (left_->getType () == BT_STRING)
+		{
+			Error::semanticError ("mixed-mode relational operation involving STRING", left_);
+			return ER_FAILED;
+		}
+		if (right_->getType () == BT_STRING)
+		{
+			Error::semanticError ("mixed-mode relational operation involving STRING", right_);
+			return ER_FAILED;
+		}
+
+		// Mixed operation, cast to int
+		if (left_->getType() == BT_INT)
+		{
+			CastOperatorNode *cast = new CastOperatorNode (left_, BT_FLOAT);
+			left_ = cast;
+			return left_->inferType ();
+		}
+		else
+		{
+			CastOperatorNode *cast = new CastOperatorNode (right_, BT_FLOAT);
+			right_ = cast;
+			return right_->inferType ();
+		}
+
+		// Done
+		return NO_ERROR;
+	}
 }
 
 int LogicalOperatorNode::inferType ()
 {
+	// We know for sure the return type
+	setType (BT_INT);
+
 	// Disallow operation on string types
-	if (getLeft ()->getType () == BT_STRING)
+	if (left_->getType () == BT_STRING)
 	{
 		Error::semanticError ("logical operation not allowed on STRING type", getLeft ());
 		return ER_FAILED;
 	}
-	if (getRight ()->getType () == BT_STRING)
+	if (right_ != nullptr && right_->getType () == BT_STRING)
 	{
 		Error::semanticError ("logical operation not allowed on STRING type", getRight ());
 		return ER_FAILED;
 	}
 
+	// Cast to integer, where needed
+	int rc = NO_ERROR;
+	if (left_->getType () != BT_INT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (left_, BT_INT);
+		left_ = cast;
+		rc = left_->inferType ();
+	}
+	if (rc == NO_ERROR && right_ != nullptr && right_->getType () != BT_INT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (right_, BT_INT);
+		right_ = cast;
+		rc = right_->inferType ();
+	}
+
 	// All ok
-	return NO_ERROR;
+	return rc;
 }
 
 std::string PlusOperatorNode::toString ()
@@ -92,8 +166,9 @@ std::string PlusOperatorNode::toString ()
 
 int PlusOperatorNode::inferType ()
 {
-	if ((getLeft ()->getType () == BT_STRING)
-		&& (getRight ()->getType () == BT_STRING))
+	if ((left_->getType () == BT_STRING)
+		&& (right_ != nullptr)
+		&& (right_->getType () == BT_STRING))
 	{
 		// Allow PLUS as concatenation operator
 		return NO_ERROR;

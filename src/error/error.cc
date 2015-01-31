@@ -24,5 +24,5 @@ void Error::syntaxError (const std::string error, int line, int column)
 
 void Error::semanticError (const std::string error, ParserNode *node)
 {
-	Error::reportError ("Syntax error at line ??? column ???: " + error);
+	Error::reportError ("Semantic error at line ??? column ???: " + error);
 }
