@@ -20,9 +20,88 @@ std::string OperatorNode::print ()
 	}
 }
 
+int ArithmeticOperatorNode::inferType ()
+{
+	// Disallow operation on string types
+	if (left_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", getLeft ());
+		return ER_FAILED;
+	}
+	if (right_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", getRight ());
+		return ER_FAILED;
+	}
+
+	// Operation on INT and FLOAT
+	if (left_->getType () == right_->getType ())
+	{
+		// Non-mixed operation
+		setType (left_->getType ());
+		return NO_ERROR;
+	}
+	else
+	{
+		// Mixed operation, apply cast
+		if (left_->getType() == BT_INT)
+		{
+			CastOperatorNode *cast = new CastOperatorNode (left_, BT_FLOAT);
+			left_ = cast;
+			return left_->inferType ();
+		}
+		else
+		{
+			CastOperatorNode *cast = new CastOperatorNode (right_, BT_FLOAT);
+			right_ = cast;
+			return right_->inferType ();
+		}
+
+		// Done
+		return NO_ERROR;
+	}
+}
+
+int RelationalOperatorNode::inferType ()
+{
+	return NO_ERROR;
+}
+
+int LogicalOperatorNode::inferType ()
+{
+	// Disallow operation on string types
+	if (getLeft ()->getType () == BT_STRING)
+	{
+		Error::semanticError ("logical operation not allowed on STRING type", getLeft ());
+		return ER_FAILED;
+	}
+	if (getRight ()->getType () == BT_STRING)
+	{
+		Error::semanticError ("logical operation not allowed on STRING type", getRight ());
+		return ER_FAILED;
+	}
+
+	// All ok
+	return NO_ERROR;
+}
+
 std::string PlusOperatorNode::toString ()
 {
 	return std::string ("+");
+}
+
+int PlusOperatorNode::inferType ()
+{
+	if ((getLeft ()->getType () == BT_STRING)
+		&& (getRight ()->getType () == BT_STRING))
+	{
+		// Allow PLUS as concatenation operator
+		return NO_ERROR;
+	}
+	else
+	{
+		return ArithmeticOperatorNode::inferType ();
+	}
 }
 
 std::string MinusOperatorNode::toString ()
@@ -108,4 +187,10 @@ std::string XorOperatorNode::toString ()
 std::string CastOperatorNode::toString ()
 {
 	return std::string ("cast as " + basic_type_to_string (return_type_));
+}
+
+int CastOperatorNode::inferType ()
+{
+	// TODO: disallow invalid casts
+	return NO_ERROR;
 }

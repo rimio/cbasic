@@ -6,33 +6,15 @@
 
 ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 {
-	if (node->getNodeType () == PT_OPERATOR)
+	// First infer types for inferrable nodes (i.e. typed nodes)
+	// NOTE: type checking errors may appear here as well.
+	if (node->getNodeType () < PT_LAST_TYPED)
 	{
-		OperatorNode *op = (OperatorNode *) node;
-
-		switch (op->getOperatorType ())
-		{
-		case OT_PLUS:
-		case OT_MINUS:
-		case OT_MULTIPLICATION:
-		case OT_DIVISION:
-		case OT_INTDIVISION:
-		case OT_MODULO:
-		case OT_POWER:
-		case OT_GT:
-		case OT_LT:
-		case OT_GT_EQ:
-		case OT_LT_EQ:
-		case OT_EQUAL:
-		case OT_NOT_EQUAL:
-			// Integer + float ==> float + float
-			break;
-
-		default:
-			break;
-		}
+		TypedParserNode *typed = (TypedParserNode *) node;
+		int error = typed->inferType ();
+		// TODO: handle error
 	}
 
-	// Nothing done
+	// Node not modified
 	return node;
 }

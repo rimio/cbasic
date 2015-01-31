@@ -10,10 +10,15 @@
 //
 typedef enum
 {
-	PT_VALUE,
-	PT_OPERATOR,
-	PT_IDENTIFIER,
-	PT_STATEMENT
+	PT_VALUE 				= 1,
+	PT_OPERATOR				= 2,
+	PT_IDENTIFIER			= 3,
+
+	// Only nodes inheriting TypedParserNode before this
+	PT_LAST_TYPED			= 99,
+	// Only nodes inheriting ParserNode after this
+
+	PT_STATEMENT			= 100
 } ParserNodeType;
 
 //
@@ -52,13 +57,14 @@ public:
 };
 
 //
-// Generic typed parser node that defines the getType () member for expression components and such
+// Generic typed parser node
 //
 class TypedParserNode : public ParserNode
 {
 public:
 	virtual BasicType getType () const = 0;
 	virtual void setType (BasicType type) = 0;
+	virtual int inferType () = 0;
 };
 
 #endif

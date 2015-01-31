@@ -2,6 +2,7 @@
 #define OPERATOR_NODES_H_
 
 #include "parser-node.h"
+#include "error/error.h"
 
 //
 // Operator enumeration
@@ -35,16 +36,16 @@ class OperatorNode : public TypedParserNode
 {
 protected:
 	// Hidden constructors
-	OperatorNode (ParserNode *operand, BasicType type) :
+	OperatorNode (TypedParserNode *operand, BasicType type) :
 		left_ (operand), right_ (nullptr), return_type_ (type) { };					// Unary with type
-	OperatorNode (ParserNode *operand) :
+	OperatorNode (TypedParserNode *operand) :
 		left_ (operand), right_ (nullptr), return_type_ (BT_UNKNOWN) { };			// Unary
-	OperatorNode (ParserNode *l, ParserNode *r) :
+	OperatorNode (TypedParserNode *l, TypedParserNode *r) :
 		left_ (l), right_ (r), return_type_ (BT_UNKNOWN) { };						// Binary
 
 	// Operands
-	ParserNode *left_;
-	ParserNode *right_;
+	TypedParserNode *left_;
+	TypedParserNode *right_;
 
 	// Return type
 	BasicType return_type_;
@@ -56,13 +57,13 @@ public:
 	virtual OperatorType getOperatorType () const = 0;
 
 	// Getters for lhs/rhs
-	ParserNode *getLeft () const { return left_; }
-	ParserNode *getRight () const { return right_; }
+	TypedParserNode *getLeft () const { return left_; }
+	TypedParserNode *getRight () const { return right_; }
 
 	// This is an operator node
 	ParserNodeType getNodeType () const { return PT_OPERATOR; }
 
-	// Return type
+	// Get and set type
 	BasicType getType () const { return return_type_; }
 	void setType (BasicType type) { return_type_ = type; }
 
@@ -71,30 +72,82 @@ public:
 
 	// Return children
 	std::list<ParserNode *> getChildren () { return { left_, right_ }; };
-	std::list<ParserNode **> getChildrenReferences () { return { &left_, &right_ }; };
+	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &left_, (ParserNode **) &right_ }; };
+};
+
+//
+// Arithmetic operator base class
+//
+class ArithmeticOperatorNode : public OperatorNode
+{
+protected:
+	ArithmeticOperatorNode (TypedParserNode *operand, BasicType type) :
+		OperatorNode (operand, type) { };
+	ArithmeticOperatorNode (TypedParserNode *operand) :
+		OperatorNode (operand) { };
+	ArithmeticOperatorNode (TypedParserNode *l, TypedParserNode *r) :
+		OperatorNode (l, r) { };
+
+public:
+	int inferType ();
+};
+
+//
+// Relational operator base class
+//
+class RelationalOperatorNode : public OperatorNode
+{
+protected:
+	RelationalOperatorNode (TypedParserNode *operand, BasicType type) :
+		OperatorNode (operand, type) { };
+	RelationalOperatorNode (TypedParserNode *operand) :
+		OperatorNode (operand) { };
+	RelationalOperatorNode (TypedParserNode *l, TypedParserNode *r) :
+		OperatorNode (l, r) { };
+
+public:
+	int inferType ();
+};
+
+//
+// Relational operator base class
+//
+class LogicalOperatorNode : public OperatorNode
+{
+protected:
+	LogicalOperatorNode (TypedParserNode *operand, BasicType type) :
+		OperatorNode (operand, type) { };
+	LogicalOperatorNode (TypedParserNode *operand) :
+		OperatorNode (operand) { };
+	LogicalOperatorNode (TypedParserNode *l, TypedParserNode *r) :
+		OperatorNode (l, r) { };
+
+public:
+	int inferType ();
 };
 
 //
 // Plus operator
 //
-class PlusOperatorNode : public OperatorNode
+class PlusOperatorNode : public ArithmeticOperatorNode
 {
 public:
-	PlusOperatorNode (ParserNode *operand) : OperatorNode (operand) { };
-	PlusOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	PlusOperatorNode (TypedParserNode *operand) : ArithmeticOperatorNode (operand) { };
+	PlusOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
+	int inferType ();
 	OperatorType getOperatorType () const { return OT_PLUS; }
 };
 
 //
 // Minus operator
 //
-class MinusOperatorNode : public OperatorNode
+class MinusOperatorNode : public ArithmeticOperatorNode
 {
 public:
-	MinusOperatorNode (ParserNode *operand) : OperatorNode (operand) { };
-	MinusOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	MinusOperatorNode (TypedParserNode *operand) : ArithmeticOperatorNode (operand) { };
+	MinusOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_MINUS; }
@@ -103,10 +156,10 @@ public:
 //
 // Multiplication operator
 //
-class MultiplicationOperatorNode : public OperatorNode
+class MultiplicationOperatorNode : public ArithmeticOperatorNode
 {
 public:
-	MultiplicationOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	MultiplicationOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_MULTIPLICATION; }
@@ -115,10 +168,10 @@ public:
 //
 // Division operator
 //
-class DivisionOperatorNode : public OperatorNode
+class DivisionOperatorNode : public ArithmeticOperatorNode
 {
 public:
-	DivisionOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	DivisionOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_DIVISION; }
@@ -127,10 +180,10 @@ public:
 //
 // Integer division operator
 //
-class IntDivisionOperatorNode : public OperatorNode
+class IntDivisionOperatorNode : public ArithmeticOperatorNode
 {
 public:
-	IntDivisionOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	IntDivisionOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_INTDIVISION; }
@@ -139,10 +192,10 @@ public:
 //
 // Modulo operator
 //
-class ModuloOperatorNode : public OperatorNode
+class ModuloOperatorNode : public ArithmeticOperatorNode
 {
 public:
-	ModuloOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	ModuloOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_MODULO; }
@@ -151,10 +204,10 @@ public:
 //
 // Power operator
 //
-class PowerOperatorNode : public OperatorNode
+class PowerOperatorNode : public ArithmeticOperatorNode
 {
 public:
-	PowerOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	PowerOperatorNode (TypedParserNode *l, TypedParserNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_POWER; }
@@ -163,10 +216,10 @@ public:
 //
 // Greater than operator
 //
-class GreaterThanOperatorNode : public OperatorNode
+class GreaterThanOperatorNode : public RelationalOperatorNode
 {
 public:
-	GreaterThanOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	GreaterThanOperatorNode (TypedParserNode *l, TypedParserNode *r) : RelationalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_GT; }
@@ -175,10 +228,10 @@ public:
 //
 // Less than operator
 //
-class LessThanOperatorNode : public OperatorNode
+class LessThanOperatorNode : public RelationalOperatorNode
 {
 public:
-	LessThanOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	LessThanOperatorNode (TypedParserNode *l, TypedParserNode *r) : RelationalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_LT; }
@@ -187,10 +240,10 @@ public:
 //
 // Greater than or equal operator
 //
-class GreaterThanOrEqualOperatorNode : public OperatorNode
+class GreaterThanOrEqualOperatorNode : public RelationalOperatorNode
 {
 public:
-	GreaterThanOrEqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	GreaterThanOrEqualOperatorNode (TypedParserNode *l, TypedParserNode *r) : RelationalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_GT_EQ; }
@@ -199,10 +252,10 @@ public:
 //
 // Less than or equal operator
 //
-class LessThanOrEqualOperatorNode : public OperatorNode
+class LessThanOrEqualOperatorNode : public RelationalOperatorNode
 {
 public:
-	LessThanOrEqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	LessThanOrEqualOperatorNode (TypedParserNode *l, TypedParserNode *r) : RelationalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_LT_EQ; }
@@ -211,10 +264,10 @@ public:
 //
 // Equal operator
 //
-class EqualOperatorNode : public OperatorNode
+class EqualOperatorNode : public RelationalOperatorNode
 {
 public:
-	EqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	EqualOperatorNode (TypedParserNode *l, TypedParserNode *r) : RelationalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_EQUAL; }
@@ -223,10 +276,10 @@ public:
 //
 // Not equal operator
 //
-class NotEqualOperatorNode : public OperatorNode
+class NotEqualOperatorNode : public RelationalOperatorNode
 {
 public:
-	NotEqualOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	NotEqualOperatorNode (TypedParserNode *l, TypedParserNode *r) : RelationalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_NOT_EQUAL; }
@@ -235,10 +288,10 @@ public:
 //
 // NOT operator
 //
-class NotOperatorNode : public OperatorNode
+class NotOperatorNode : public LogicalOperatorNode
 {
 public:
-	NotOperatorNode (ParserNode *l) : OperatorNode (l, nullptr) { };
+	NotOperatorNode (TypedParserNode *l) : LogicalOperatorNode (l, nullptr) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_NOT; }
@@ -247,10 +300,10 @@ public:
 //
 // AND operator
 //
-class AndOperatorNode : public OperatorNode
+class AndOperatorNode : public LogicalOperatorNode
 {
 public:
-	AndOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	AndOperatorNode (TypedParserNode *l, TypedParserNode *r) : LogicalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_AND; }
@@ -259,10 +312,10 @@ public:
 //
 // OR operator
 //
-class OrOperatorNode : public OperatorNode
+class OrOperatorNode : public LogicalOperatorNode
 {
 public:
-	OrOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	OrOperatorNode (TypedParserNode *l, TypedParserNode *r) : LogicalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_OR; }
@@ -271,10 +324,10 @@ public:
 //
 // XOR operator
 //
-class XorOperatorNode : public OperatorNode
+class XorOperatorNode : public LogicalOperatorNode
 {
 public:
-	XorOperatorNode (ParserNode *l, ParserNode *r) : OperatorNode (l, r) { };
+	XorOperatorNode (TypedParserNode *l, TypedParserNode *r) : LogicalOperatorNode (l, r) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_XOR; }
@@ -286,10 +339,13 @@ public:
 class CastOperatorNode : public OperatorNode
 {
 public:
-	CastOperatorNode (ParserNode *l, BasicType ttype) : OperatorNode (l, ttype) { };
+	CastOperatorNode (TypedParserNode *l, BasicType ttype) : OperatorNode (l, ttype) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_CAST; }
+
+	// Nothing to infer
+	int inferType ();
 };
 
 

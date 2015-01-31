@@ -4,6 +4,7 @@
 #include <string>
 #include "parser-node.h"
 #include "symbols/basic-types.h"
+#include "error/error.h"
 
 //
 // Node for an identifier
@@ -29,6 +30,9 @@ public:
 
 	// Setting the type should be disallowed
 	void setType (BasicType type);
+
+	// Nothing to infer on values
+	int inferType () { return NO_ERROR; };
 
 	// This is an identifier
 	ParserNodeType getNodeType () const { return PT_IDENTIFIER; }

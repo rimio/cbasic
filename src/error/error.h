@@ -1,6 +1,8 @@
 #ifndef ERROR_H_
 #define ERROR_H_
 
+#include "parser/nodes/parser-node.h"
+
 //
 // Error codes
 //
@@ -25,6 +27,9 @@ public:
 
 	// Report a syntax error in the code
 	static void syntaxError (const std::string error, int line, int column);
+
+	// Report a semantic error in the code
+	static void semanticError (const std::string error, ParserNode *node);
 };
 
 #endif

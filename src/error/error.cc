@@ -21,3 +21,8 @@ void Error::syntaxError (const std::string error, int line, int column)
 {
 	Error::reportError ("Syntax error at line " + std::to_string (line) + " column " + std::to_string (column) + ": " + error);
 }
+
+void Error::semanticError (const std::string error, ParserNode *node)
+{
+	Error::reportError ("Syntax error at line ??? column ???: " + error);
+}

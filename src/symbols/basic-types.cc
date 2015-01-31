@@ -14,6 +14,6 @@ std::string basic_type_to_string (BasicType bt)
 		return "float";
 
 	default:
-		return "";
+		return "unknown";
 	}
 }

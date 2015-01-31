@@ -3,6 +3,7 @@
 
 #include <string>
 #include "parser-node.h"
+#include "error/error.h"
 
 //
 // Node to hold intermediate values (like literals and folded results)
@@ -22,6 +23,9 @@ public:
 
 	// All attempts to set type must fail
 	void setType (BasicType type);
+
+	// Nothing to infer on values
+	int inferType () { return NO_ERROR; };
 
 	// No children for value nodes
 	std::list<ParserNode *> getChildren () { return { nullptr }; }
