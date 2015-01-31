@@ -107,5 +107,5 @@ std::string XorOperatorNode::toString ()
 
 std::string CastOperatorNode::toString ()
 {
-	return std::string ("cast as " + basic_type_to_string (target_type_));
+	return std::string ("cast as " + basic_type_to_string (return_type_));
 }

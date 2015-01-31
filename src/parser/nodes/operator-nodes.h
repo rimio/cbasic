@@ -35,8 +35,12 @@ class OperatorNode : public TypedParserNode
 {
 protected:
 	// Hidden constructors
-	OperatorNode (ParserNode *operand) : left_ (operand), right_ (nullptr) { };		// Unary
-	OperatorNode (ParserNode *l, ParserNode *r) : left_ (l), right_ (r) { };		// Binary
+	OperatorNode (ParserNode *operand, BasicType type) :
+		left_ (operand), right_ (nullptr), return_type_ (type) { };					// Unary with type
+	OperatorNode (ParserNode *operand) :
+		left_ (operand), right_ (nullptr), return_type_ (BT_UNKNOWN) { };			// Unary
+	OperatorNode (ParserNode *l, ParserNode *r) :
+		left_ (l), right_ (r), return_type_ (BT_UNKNOWN) { };						// Binary
 
 	// Operands
 	ParserNode *left_;
@@ -282,7 +286,7 @@ public:
 class CastOperatorNode : public OperatorNode
 {
 public:
-	CastOperatorNode (ParserNode *l, BasicType ttype) : OperatorNode (l, nullptr), return_type_ (ttype) { };
+	CastOperatorNode (ParserNode *l, BasicType ttype) : OperatorNode (l, ttype) { };
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_CAST; }

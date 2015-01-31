@@ -8,6 +8,7 @@
 //
 typedef enum
 {
+	BT_UNKNOWN,
 	BT_STRING,
 	BT_INT,
 	BT_FLOAT
