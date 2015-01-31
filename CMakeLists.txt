@@ -43,9 +43,9 @@ set (HEADER_FILES
 	${SOURCE_DIR}/symbols/basic-types.h
 
 	# parser operations
-	${SOURCE_DIR}/parser/constant-folding.h
-	${SOURCE_DIR}/parser/find-symbols.h
-	${SOURCE_DIR}/parser/type-checking.h
+	${SOURCE_DIR}/parser/operations/constant-folding.h
+	${SOURCE_DIR}/parser/operations/find-symbols.h
+	${SOURCE_DIR}/parser/operations/type-checking.h
 
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.h
@@ -69,9 +69,9 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/symbols/basic-types.cc
 
 	# parser operations
-	${SOURCE_DIR}/parser/constant-folding.cc
-	${SOURCE_DIR}/parser/find-symbols.cc
-	${SOURCE_DIR}/parser/type-checking.cc
+	${SOURCE_DIR}/parser/operations/constant-folding.cc
+	${SOURCE_DIR}/parser/operations/find-symbols.cc
+	${SOURCE_DIR}/parser/operations/type-checking.cc
 	
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.cc

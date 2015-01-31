@@ -6,10 +6,11 @@
 #include "configure.h"
 #include "error/error.h"
 #include "parser/parser-context.h"
-#include "parser/constant-folding.h"
-#include "parser/find-symbols.h"
 #include "symbols/symbol-table.h"
-#include "parser/type-checking.h"
+
+#include "parser/operations/type-checking.h"
+#include "parser/operations/find-symbols.h"
+#include "parser/operations/constant-folding.h"
 
 //
 // getopt_long options

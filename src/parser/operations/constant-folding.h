@@ -1,8 +1,8 @@
 #ifndef CONSTANT_FOLDING_H_
 #define CONSTANT_FOLDING_H_
 
-#include "tree-walker.h"
-#include "nodes/parser-node.h"
+#include "parser/tree-walker.h"
+#include "parser/nodes/parser-node.h"
 
 //
 // Constant folding callback function for tree walk

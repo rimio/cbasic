@@ -1,8 +1,8 @@
 #include "constant-folding.h"
 #include <cassert>
 #include "symbols/basic-types.h"
-#include "nodes/operator-nodes.h"
-#include "nodes/value-nodes.h"
+#include "parser/nodes/operator-nodes.h"
+#include "parser/nodes/value-nodes.h"
 
 ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 {

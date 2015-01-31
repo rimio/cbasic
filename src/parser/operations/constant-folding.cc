@@ -1,7 +1,7 @@
 #include "constant-folding.h"
 #include <cassert>
-#include "nodes/operator-nodes.h"
-#include "nodes/value-nodes.h"
+#include "parser/nodes/operator-nodes.h"
+#include "parser/nodes/value-nodes.h"
 #include "symbols/basic-types.h"
 
 ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
