@@ -50,6 +50,7 @@ set (HEADER_FILES
 
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.h
+	${SOURCE_DIR}/parser/nodes/expression-node.h
 	${SOURCE_DIR}/parser/nodes/value-nodes.h
 	${SOURCE_DIR}/parser/nodes/operator-nodes.h
 	${SOURCE_DIR}/parser/nodes/identifier-node.h

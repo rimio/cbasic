@@ -11,7 +11,7 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 	// NOTE: type checking errors may appear here as well.
 	if (node->getNodeType () < PT_LAST_TYPED)
 	{
-		TypedParserNode *typed = (TypedParserNode *) node;
+		ExpressionNode *typed = (ExpressionNode *) node;
 		int error = typed->inferType ();
 		// TODO: handle error
 	}

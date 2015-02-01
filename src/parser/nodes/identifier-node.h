@@ -3,13 +3,14 @@
 
 #include <string>
 #include "parser-node.h"
+#include "expression-node.h"
 #include "symbols/basic-types.h"
 #include "error/error.h"
 
 //
 // Node for an identifier
 //
-class IdentifierNode : public TypedParserNode
+class IdentifierNode : public ExpressionNode
 {
 private:
 	// Name of identifier, excluding type suffix

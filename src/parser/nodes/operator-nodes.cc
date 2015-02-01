@@ -388,7 +388,7 @@ int CastOperatorNode::inferType ()
 	return NO_ERROR;
 }
 
-CastOperatorNode::CastOperatorNode (TypedParserNode *l, BasicType ttype) : OperatorNode (l, ttype)
+CastOperatorNode::CastOperatorNode (ExpressionNode *l, BasicType ttype) : OperatorNode (l, ttype)
 {
 	// Save location of expression as this node's location
 	setLocation (l->getLocation ());

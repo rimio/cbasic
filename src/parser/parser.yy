@@ -44,7 +44,7 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 	std::string *sval;
 
 	ParserNode *parser_node;
-	TypedParserNode *typed_node;
+	ExpressionNode *expr_node;
 	ValueNode *value_node;
 	IdentifierNode *identifier_node;
 	StatementNode *statement_node;
@@ -91,22 +91,22 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 
 %type <statement_node>	allocation_statement_part
 %type <statement_node>	allocation_statement_part_list
-%type <typed_node>		and_op
-%type <typed_node>		comparison_op
-%type <typed_node>		expression
-%type <typed_node>		expression_list
+%type <expr_node>		and_op
+%type <expr_node>		comparison_op
+%type <expr_node>		expression
+%type <expr_node>		expression_list
 %type <identifier_node>	identifier
 %type <statement_node>	if_statement
-%type <typed_node>		intdiv_op
+%type <expr_node>		intdiv_op
 %type <value_node>		literal
-%type <typed_node>		modulo_op
-%type <typed_node>		mul_div_op
-%type <typed_node>		negation_op
-%type <typed_node>		not_op
-%type <typed_node>		operand
-%type <typed_node>		or_xor_op
-%type <typed_node>		plus_minus_op
-%type <typed_node>		power_op
+%type <expr_node>		modulo_op
+%type <expr_node>		mul_div_op
+%type <expr_node>		negation_op
+%type <expr_node>		not_op
+%type <expr_node>		operand
+%type <expr_node>		or_xor_op
+%type <expr_node>		plus_minus_op
+%type <expr_node>		power_op
 %type <statement_node>	statement
 %type <statement_node>	statement_list
 %type <statement_node>	statement_with_newline

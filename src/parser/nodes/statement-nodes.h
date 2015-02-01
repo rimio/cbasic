@@ -43,14 +43,14 @@ private:
 	IdentifierNode *identifier_;
 
 	// Right hand side - expression
-	TypedParserNode *expression_;
+	ExpressionNode *expression_;
 
 public:
-	AssignmentStatementNode (IdentifierNode *iden, TypedParserNode *expr) : identifier_ (iden), expression_ (expr) { }
+	AssignmentStatementNode (IdentifierNode *iden, ExpressionNode *expr) : identifier_ (iden), expression_ (expr) { }
 	virtual ~AssignmentStatementNode ();
 
 	IdentifierNode *getIdentifier () const { return identifier_; }
-	TypedParserNode *getExpression () const { return expression_; }
+	ExpressionNode *getExpression () const { return expression_; }
 
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_ASSIGNMENT; }
@@ -104,16 +104,16 @@ private:
 	WhileStatementNode () { };
 
 	// Condition for loop
-	TypedParserNode *condition_;
+	ExpressionNode *condition_;
 
 	// Code do execute in loop
 	ParserNode *statements_;
 
 public:
-	WhileStatementNode (TypedParserNode *cond, ParserNode *stmts) : condition_ (cond), statements_ (stmts) { };
+	WhileStatementNode (ExpressionNode *cond, ParserNode *stmts) : condition_ (cond), statements_ (stmts) { };
 	virtual ~WhileStatementNode ();
 
-	TypedParserNode *getCondition () const { return condition_; }
+	ExpressionNode *getCondition () const { return condition_; }
 	ParserNode *getStatements () const { return statements_; }
 
 	// Implementations of StatementNode pure virtual functions
@@ -136,17 +136,17 @@ private:
 	IfStatementNode () { };
 
 	// Condition
-	TypedParserNode *condition_;
+	ExpressionNode *condition_;
 
 	// Code do execute for THEN and ELSE
 	ParserNode *then_;
 	ParserNode *else_;
 
 public:
-	IfStatementNode (TypedParserNode *cond, ParserNode *then, ParserNode *el) : condition_ (cond), then_ (then), else_ (el) { };
+	IfStatementNode (ExpressionNode *cond, ParserNode *then, ParserNode *el) : condition_ (cond), then_ (then), else_ (el) { };
 	virtual ~IfStatementNode ();
 
-	TypedParserNode *getCondition () const { return condition_; }
+	ExpressionNode *getCondition () const { return condition_; }
 	ParserNode *getThen () const { return then_; }
 	ParserNode *getElse () const { return else_; }
 

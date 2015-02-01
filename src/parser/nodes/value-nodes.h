@@ -3,12 +3,13 @@
 
 #include <string>
 #include "parser-node.h"
+#include "expression-node.h"
 #include "error/error.h"
 
 //
 // Node to hold intermediate values (like literals and folded results)
 //
-class ValueNode : public TypedParserNode
+class ValueNode : public ExpressionNode
 {
 protected:
 	// Hidden constructor

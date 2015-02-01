@@ -69,15 +69,4 @@ public:
 	virtual std::list<ParserNode **> getChildrenReferences () = 0;
 };
 
-//
-// Generic typed parser node
-//
-class TypedParserNode : public ParserNode
-{
-public:
-	virtual BasicType getType () const = 0;
-	virtual void setType (BasicType type) = 0;
-	virtual int inferType () = 0;
-};
-
 #endif
