@@ -22,7 +22,7 @@ public:
 	IdentifierNode (std::string name, BasicType type) : name_ (name), type_ (type) { };
 
 	std::string toString ();
-	std::string print ();
+	std::string print (std::string indent);
 
 	// Get name type of identifier
 	std::string getName () const { return name_; }

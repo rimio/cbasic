@@ -8,7 +8,9 @@
 typedef enum
 {
 	ST_ASSIGNMENT,
-	ST_ALLOCATION
+	ST_ALLOCATION,
+	ST_WHILE,
+	ST_IF
 } StatementType;
 
 //
@@ -55,7 +57,7 @@ public:
 
 	// Implementations of ParserNode pure virtual functions
 	std::string toString ();
-	std::string print ();
+	std::string print (std::string indent);
 	std::list<ParserNode *> getChildren () { return { identifier_, expression_ }; }
 	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &identifier_, (ParserNode **)&expression_ }; }
 };
@@ -87,9 +89,75 @@ public:
 
 	// Implementations of ParserNode pure virtual functions
 	std::string toString ();
-	std::string print ();
+	std::string print (std::string indent);
 	std::list<ParserNode *> getChildren () { return { identifier_, dimension_list_ }; }
 	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &identifier_, &dimension_list_ }; }
+};
+
+//
+// WHILE statement
+//
+class WhileStatementNode : public StatementNode
+{
+private:
+	// Hidden constructor
+	WhileStatementNode () { };
+
+	// Condition for loop
+	TypedParserNode *condition_;
+
+	// Code do execute in loop
+	ParserNode *statements_;
+
+public:
+	WhileStatementNode (TypedParserNode *cond, ParserNode *stmts) : condition_ (cond), statements_ (stmts) { };
+	virtual ~WhileStatementNode ();
+
+	TypedParserNode *getCondition () const { return condition_; }
+	ParserNode *getStatements () const { return statements_; }
+
+	// Implementations of StatementNode pure virtual functions
+	StatementType getStatementType () const { return ST_WHILE; }
+
+	// Implementations of ParserNode pure virtual functions
+	std::string toString ();
+	std::string print (std::string indent);
+	std::list<ParserNode *> getChildren () { return { condition_, statements_ }; }
+	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &condition_, &statements_ }; }
+};
+
+//
+// IF statement
+//
+class IfStatementNode : public StatementNode
+{
+private:
+	// Hidden constructor
+	IfStatementNode () { };
+
+	// Condition
+	TypedParserNode *condition_;
+
+	// Code do execute for THEN and ELSE
+	ParserNode *then_;
+	ParserNode *else_;
+
+public:
+	IfStatementNode (TypedParserNode *cond, ParserNode *then, ParserNode *el) : condition_ (cond), then_ (then), else_ (el) { };
+	virtual ~IfStatementNode ();
+
+	TypedParserNode *getCondition () const { return condition_; }
+	ParserNode *getThen () const { return then_; }
+	ParserNode *getElse () const { return else_; }
+
+	// Implementations of StatementNode pure virtual functions
+	StatementType getStatementType () const { return ST_IF; }
+
+	// Implementations of ParserNode pure virtual functions
+	std::string toString ();
+	std::string print (std::string indent);
+	std::list<ParserNode *> getChildren () { return { condition_, then_, else_ }; }
+	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &condition_, &then_, &else_ }; }
 };
 
 #endif

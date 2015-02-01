@@ -84,12 +84,20 @@ void ParserContext::printTreeRecursive (std::ostream &stream, int level, ParserN
 	if (node == nullptr)
 		return;
 
+	// Print address
+	std::cout << "<addr=" << node << ">  ";
+
 	// Pad for level
 	for (int i = 0; i < level; i ++)
 		std::cout << "  ";
 
 	// Print text
-	std::cout << node->toString () << std::endl;
+	std::cout << node->toString ();
+	if (node->getNext () != nullptr)
+	{
+		std::cout << "  <next=" << node->getNext () << ">";
+	}
+	std::cout << std::endl;
 
 	// Print children
 	std::list<ParserNode *> ch = node->getChildren();
@@ -120,7 +128,7 @@ int ParserContext::printProgram (std::ostream &stream)
 {
 	if (root_node_ != nullptr)
 	{
-		stream << root_node_->print () << std::endl;
+		stream << root_node_->print ("") << std::endl;
 		return NO_ERROR;
 	}
 	else

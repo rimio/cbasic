@@ -19,7 +19,7 @@ public:
 	ParserNodeType getNodeType () const { return PT_VALUE; }
 
 	// All value nodes will be printed as is
-	std::string print ();
+	std::string print (std::string indent);
 
 	// All attempts to set type must fail
 	void setType (BasicType type);

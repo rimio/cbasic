@@ -54,6 +54,14 @@ location_.step();
 [Ll][Ee][Tt]					{ return Parser::token::LET; }
 [Dd][Ii][Mm]					{ return Parser::token::DIM; }
 
+[Ww][Hh][Ii][Ll][Ee]			{ return Parser::token::WHILE; }
+[Ww][Ee][Nn][Dd]				{ return Parser::token::WEND; }
+
+[Ii][Ff]						{ return Parser::token::IF; }
+[Tt][Hh][Ee][Nn]				{ return Parser::token::THEN; }
+[Ee][Ll][Ss][Ee]				{ return Parser::token::ELSE; }
+[Ee][Nn][Dd][Ii][Ff]			{ return Parser::token::ENDIF; }
+
 [0-9]+								{ yylval->ival = atoi (yytext); return Parser::token::ILITERAL; }
 [0][0-9a-fA-F]*[Hh]					{ yylval->ival = strtol (yytext, NULL, 16); return Parser::token::ILITERAL; }
 [0-1]+[Bb]							{ yylval->ival = strtol (yytext, NULL, 2); return Parser::token::ILITERAL; }

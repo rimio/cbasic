@@ -2,9 +2,9 @@
 #include <cassert>
 #include "error/error.h"
 
-std::string ValueNode::print ()
+std::string ValueNode::print (std::string indent)
 {
-	return toString ();
+	return indent + toString ();
 }
 
 void ValueNode::setType (BasicType type)

@@ -20,6 +20,8 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 	if (node->getNodeType () == PT_STATEMENT)
 	{
 		StatementNode *st = (StatementNode *) node;
+
+		// Assignment
 		if (st->getStatementType () == ST_ASSIGNMENT)
 		{
 			AssignmentStatementNode *asn = (AssignmentStatementNode *) node;
@@ -53,6 +55,28 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 					// TODO: handle error
 					return node;
 				}
+			}
+		}
+
+		// While statement
+		if (st->getStatementType () == ST_WHILE)
+		{
+			WhileStatementNode *wh = (WhileStatementNode *)node;
+			if (wh->getCondition ()->getType () == BT_STRING)
+			{
+				Error::semanticError ("WHILE statement condition cannot be of type STRING", wh->getCondition ());
+				return node;
+			}
+		}
+
+		// If statement
+		if (st->getStatementType () == ST_IF)
+		{
+			IfStatementNode *if_ = (IfStatementNode *)node;
+			if (if_->getCondition ()->getType () == BT_STRING)
+			{
+				Error::semanticError ("WHILE statement condition cannot be of type STRING", if_->getCondition ());
+				return node;
 			}
 		}
 	}

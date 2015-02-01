@@ -57,7 +57,7 @@ public:
 	virtual std::string toString () = 0;
 
 	// Returns a printable representation of the node (and children)
-	virtual std::string print () = 0;
+	virtual std::string print (std::string indent) = 0;
 
 	// Returns the type of parser node
 	virtual ParserNodeType getNodeType () const = 0;

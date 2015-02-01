@@ -68,7 +68,7 @@ public:
 	void setType (BasicType type) { return_type_ = type; }
 
 	// Print expression
-	std::string print ();
+	std::string print (std::string indent);
 
 	// Return children
 	std::list<ParserNode *> getChildren () { return { left_, right_ }; };

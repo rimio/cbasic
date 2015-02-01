@@ -9,15 +9,15 @@ OperatorNode::~OperatorNode()
 		delete right_;
 }
 
-std::string OperatorNode::print ()
+std::string OperatorNode::print (std::string indent)
 {
 	if (right_ == nullptr)
 	{
-		return "(" + toString () + " " + left_->print () + ")";
+		return indent + "(" + toString () + " " + left_->print ("") + ")";
 	}
 	else
 	{
-		return "(" + left_->print () + " " + toString () + " " + right_->print () + ")";
+		return indent + "(" + left_->print ("") + " " + toString () + " " + right_->print ("") + ")";
 	}
 }
 
@@ -170,6 +170,7 @@ int PlusOperatorNode::inferType ()
 		&& (right_ != nullptr)
 		&& (right_->getType () == BT_STRING))
 	{
+		setType (BT_STRING);
 		// Allow PLUS as concatenation operator
 		return NO_ERROR;
 	}
@@ -374,7 +375,16 @@ std::string CastOperatorNode::toString ()
 
 int CastOperatorNode::inferType ()
 {
-	// TODO: disallow invalid casts
+	if ((return_type_ == BT_STRING && left_->getType () != BT_STRING)
+		|| (return_type_ != BT_STRING && left_->getType () == BT_STRING))
+	{
+		Error::semanticError ("cannot convert expression of type "
+							  + basic_type_to_string (left_->getType ()) + " to type "
+							  + basic_type_to_string (return_type_),
+							  left_);
+		return ER_FAILED;
+	}
+
 	return NO_ERROR;
 }
 

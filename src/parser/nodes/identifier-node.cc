@@ -21,9 +21,9 @@ std::string IdentifierNode::toString ()
 	}
 }
 
-std::string IdentifierNode::print ()
+std::string IdentifierNode::print (std::string indent)
 {
-	return toString ();
+	return indent + toString ();
 }
 
 void IdentifierNode::setType (BasicType type)

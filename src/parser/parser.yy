@@ -54,25 +54,31 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %token BACKSLASH				"'\\'"
 %token COMMA					"','"
 %token DIM
+%token ELSE
 %token END					0	"end of file"
-%token EQUAL					"'='"
+%token ENDIF
+%token EQUAL					"="
 %token GT						"GT"
 %token GT_EQ					"GE"
+%token IF
 %token LET
 %token LT						"LT"
 %token LT_EQ					"LE"
-%token MINUS					"'-'"
+%token MINUS					"-"
 %token MODULO					"MOD"
 %token NEWLINE					"newline"
 %token NOT
-%token NOT_EQUAL				"'<>'"
+%token NOT_EQUAL				"<>"
 %token OR
-%token PAR_CLOSE				"')'"
-%token PAR_OPEN					"'('"
-%token PLUS						"'+'"
-%token POWER					"'^'"
-%token SLASH					"'/'"
-%token STAR						"'*'"
+%token PAR_CLOSE				")"
+%token PAR_OPEN					"("
+%token PLUS						"+"
+%token POWER					"^"
+%token SLASH					"/"
+%token STAR						"*"
+%token THEN
+%token WHILE
+%token WEND
 %token XOR
 
 %token <ival> ILITERAL			"integer literal"
@@ -90,6 +96,7 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %type <typed_node>		expression
 %type <typed_node>		expression_list
 %type <identifier_node>	identifier
+%type <statement_node>	if_statement
 %type <typed_node>		intdiv_op
 %type <value_node>		literal
 %type <typed_node>		modulo_op
@@ -103,21 +110,25 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %type <statement_node>	statement
 %type <statement_node>	statement_list
 %type <statement_node>	statement_with_newline
+%type <statement_node>	while_statement;
+
+/* this has dummy type */
+%type <ival>			opt_newline
 
 %%
 
 program
-	: statement_with_newline END
+	: opt_newline statement_with_newline END
 		{
-			*root_node = $1;
+			*root_node = $2;
 		}
-	| statement END
+	| opt_newline statement END
 		{
-			*root_node = $1;
+			*root_node = $2;
 		}
-	| statement_list END
+	| opt_newline statement_list END
 		{
-			*root_node = $1;
+			*root_node = $2;
 		}
 	;
 
@@ -146,10 +157,6 @@ statement_with_newline
 		{
 			$$ = $1;
 		}
-	| NEWLINE statement
-		{
-			$$ = $2;
-		}
 	;
 
 statement
@@ -161,6 +168,35 @@ statement
 	| DIM allocation_statement_part_list
 		{
 			$$ = $2;
+		}
+	| while_statement
+		{
+			$$ = $1;
+		}
+	| if_statement
+		{
+			$$ = $1;
+		}
+	;
+
+if_statement
+	: IF expression THEN NEWLINE statement_list ELSE NEWLINE statement_list ENDIF
+		{
+			$$ = new IfStatementNode ($2, $5, $8);
+			$$->setLocation (@1);
+		}
+	| IF expression THEN NEWLINE statement_list ENDIF
+		{
+			$$ = new IfStatementNode ($2, $5, nullptr);
+			$$->setLocation (@1);
+		}
+	;
+
+while_statement
+	: WHILE expression NEWLINE statement_list WEND
+		{
+			$$ = new WhileStatementNode ($2, $4);
+			$$->setLocation (@1);
 		}
 	;
 
@@ -418,6 +454,17 @@ literal
 		{
 			$$ = new StringValueNode (*$1);
 			$$->setLocation (@1);
+		}
+	;
+
+opt_newline
+	: /* empty */
+		{
+			$$ = 0;
+		}
+	| NEWLINE
+		{
+			$$ = 0;
 		}
 	;
 
