@@ -36,6 +36,7 @@ configure_file (
 # Header files
 set (HEADER_FILES
 	${SOURCE_DIR}/configure.h
+	${SOURCE_DIR}/verbose.h
 	${SOURCE_DIR}/error/error.h
 	${SOURCE_DIR}/parser/parser-context.h
 	${SOURCE_DIR}/parser/tree-walker.h

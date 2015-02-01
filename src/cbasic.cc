@@ -5,6 +5,7 @@
 
 #include "configure.h"
 #include "error/error.h"
+#include "verbose.h"
 #include "parser/parser-context.h"
 #include "symbols/symbol-table.h"
 
@@ -16,6 +17,7 @@ static struct option long_options[] =
 	{ "version",	no_argument,		NULL, 		'v' },
 	{ "help",		no_argument,		NULL,		'h' },
 	{ "output",		required_argument,	NULL,		'o' },
+	{ "verbose",	required_argument,	NULL,		'V' },
 
 	// End
 	{ NULL,			0,					NULL, 		0 }
@@ -26,6 +28,9 @@ static struct option long_options[] =
 //
 static std::string *output_file = nullptr;
 static std::string *input_file = nullptr;
+static std::string *assembly_file = nullptr;
+
+unsigned int verbose_flags = 0;
 
 //
 // Print version
@@ -54,8 +59,20 @@ void print_usage ()
 {
 	print_version ();
 	std::cout << std::endl;
-	std::cout << "Usage: cbasic [OPTION]... FILE" << std::endl;
-
+	std::cout << "Usage: cbasic [OPTIONS]... FILE" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Mandatory arguments to long options are mandatory for short options too." << std::endl;
+	std::cout << std::endl;
+	std::cout << "Options:" << std::endl;
+	std::cout << "  -h, --help              display this help screen" << std::endl;
+	std::cout << "  -v, --version           output version information" << std::endl;
+	std::cout << "  -o, --output=FILE       specify the binary output file" << std::endl;
+	std::cout << "  -V, --verbose=LEVEL     specify verbose level as a sum of the following flags:" << std::endl;
+	std::cout << "                            0 - nothing is printed (default when oprion is not present)" << std::endl;
+	std::cout << "                            1 - print program after parsing" << std::endl;
+	std::cout << "                            2 - print abstract syntax tree after parsing" << std::endl;
+	std::cout << "                            4 - print symbol tables after semantic analysis" << std::endl;
+	std::cout << "                            8 - print program after semantic analysis" << std::endl;
 }
 
 //
@@ -67,7 +84,7 @@ int parse_args (int argc, char **argv)
 	{
 		// get option
 		int option_index = -1;
-		int c = getopt_long (argc, argv, "vho:", long_options, &option_index);
+		int c = getopt_long (argc, argv, "vho:V:", long_options, &option_index);
 		if (c == -1)
 		{
 			// Finished
@@ -90,6 +107,23 @@ int parse_args (int argc, char **argv)
 					Error::internalError ("short name is zero for non-flag parameter");
 					return ER_FAILED;
 				}
+
+			case 'V':
+				if (optarg != NULL)
+				{
+					verbose_flags = atoi (optarg);
+					if (verbose_flags > VERBOSE_FLAG_MAX)
+					{
+						Error::internalError("verbose flags out of bounds");
+						return ER_FAILED;
+					}
+				}
+				else
+				{
+					Error::internalError ("verbose flags not provided");
+					return ER_FAILED;
+				}
+				break;
 
 			case 'v':
 				print_version ();
@@ -173,9 +207,20 @@ int main (int argc, char **argv)
 			Error::error ("input file was not provided");
 			return ER_FAILED;
 		}
+
+		// Set assembly code file
+		assembly_file = new std::string (*input_file + ".nasm");
+
+		// Default output file if one not provided
+		if (output_file == nullptr)
+		{
+			output_file = new std::string (*input_file + ".out");
+		}
 	}
 
-	// Parse
+	//
+	// LEXICAL AND SYNTACTIC ANALYSIS
+	//
 	ParserContext *pc = new ParserContext ();
 	if (pc->parseFile (*input_file) != NO_ERROR)
 	{
@@ -183,28 +228,42 @@ int main (int argc, char **argv)
 		return ER_FAILED;
 	}
 
-	// Print AST
-	std::cout << std::endl << std::endl << "AST:" << std::endl;
-	pc->printTree (std::cout);
+	// VERBOSE code
+	if (VERBOSE_PRINT_AST)
+	{
+		std::cout << std::endl << "[VERBOSE] Abstract Syntax Tree:" << std::endl;
+		pc->printTree (std::cout);
+		std::cout << "[VERBOSE END]" << std::endl << std::endl;
+	}
+	if (VERBOSE_PRINT_PARSED)
+	{
+		std::cout << std::endl << "[VERBOSE] Original program: " << std::endl;
+		pc->printProgram (std::cout);
+		std::cout << "[VERBOSE END]" << std::endl << std::endl;
+	}
 
-	// Print original program
-	std::cout << std::endl << "Original program: " << std::endl;
-	pc->printProgram (std::cout);
-
-	// Semantic analysis
+	//
+	// SEMANTIC ANALYSIS
+	//
 	if (pc->semanticAnalysis () != NO_ERROR)
 	{
 		// Error should have been printed
 		return ER_FAILED;
 	}
 
-	// Print symbol table
-	std::cout << std::endl << std::endl << "Symbol table: " << std::endl;
-	SymbolTable::debugPrint ();
-
-	// Print final program before IL code generation
-	std::cout << std::endl << std::endl << "Final program: " << std::endl;
-	pc->printProgram (std::cout);
+	// VERBOSE code
+	if (VERBOSE_PRINT_SYMBOLS)
+	{
+		std::cout << std::endl << "[VERBOSE] Symbol table: " << std::endl;
+		SymbolTable::debugPrint ();
+		std::cout << "[VERBOSE END]" << std::endl << std::endl;
+	}
+	if (VERBOSE_PRINT_FINAL)
+	{
+		std::cout << std::endl << "[VERBOSE] Final program: " << std::endl;
+		pc->printProgram (std::cout);
+		std::cout << "[VERBOSE END]" << std::endl << std::endl;
+	}
 
 	// All ok
 	return 0;
