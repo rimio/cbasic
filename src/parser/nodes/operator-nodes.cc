@@ -26,12 +26,12 @@ int ArithmeticOperatorNode::inferType ()
 	// Disallow operation on string types
 	if (left_->getType () == BT_STRING)
 	{
-		Error::semanticError ("arithmetic operation not allowed on STRING type", getLeft ());
+		Error::semanticError ("arithmetic operation not allowed on STRING type", left_);
 		return ER_FAILED;
 	}
 	if (right_ != nullptr && right_->getType () == BT_STRING)
 	{
-		Error::semanticError ("arithmetic operation not allowed on STRING type", getRight ());
+		Error::semanticError ("arithmetic operation not allowed on STRING type", right_);
 		return ER_FAILED;
 	}
 
@@ -194,14 +194,122 @@ std::string DivisionOperatorNode::toString ()
 	return std::string ("/");
 }
 
+int DivisionOperatorNode::inferType ()
+{
+	// We know the type
+	setType (BT_FLOAT);
+
+	// Disallow operation on string types
+	if (left_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", left_);
+		return ER_FAILED;
+	}
+	if (right_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", right_);
+		return ER_FAILED;
+	}
+
+	// Apply cast
+	int rc = NO_ERROR;
+	if (left_->getType() == BT_INT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (left_, BT_FLOAT);
+		left_ = cast;
+		rc = left_->inferType ();
+	}
+	if (rc == NO_ERROR && right_->getType () == BT_INT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (right_, BT_FLOAT);
+		right_ = cast;
+		rc = right_->inferType ();
+	}
+
+	// Done
+	return rc;
+}
+
 std::string IntDivisionOperatorNode::toString ()
 {
 	return std::string ("\\");
 }
 
+int IntDivisionOperatorNode::inferType ()
+{
+	// We know the type
+	setType (BT_INT);
+
+	// Disallow operation on string types
+	if (left_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", left_);
+		return ER_FAILED;
+	}
+	if (right_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", right_);
+		return ER_FAILED;
+	}
+
+	// Apply cast
+	int rc = NO_ERROR;
+	if (left_->getType() == BT_FLOAT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (left_, BT_INT);
+		left_ = cast;
+		rc = left_->inferType ();
+	}
+	if (rc == NO_ERROR && right_->getType () == BT_FLOAT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (right_, BT_INT);
+		right_ = cast;
+		rc = right_->inferType ();
+	}
+
+	// Done
+	return rc;
+}
+
 std::string ModuloOperatorNode::toString ()
 {
 	return std::string ("mod");
+}
+
+int ModuloOperatorNode::inferType ()
+{
+	// We know the type
+	setType (BT_INT);
+
+	// Disallow operation on string types
+	if (left_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", left_);
+		return ER_FAILED;
+	}
+	if (right_->getType () == BT_STRING)
+	{
+		Error::semanticError ("arithmetic operation not allowed on STRING type", right_);
+		return ER_FAILED;
+	}
+
+	// Apply cast
+	int rc = NO_ERROR;
+	if (left_->getType() == BT_FLOAT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (left_, BT_INT);
+		left_ = cast;
+		rc = left_->inferType ();
+	}
+	if (rc == NO_ERROR && right_->getType () == BT_FLOAT)
+	{
+		CastOperatorNode *cast = new CastOperatorNode (right_, BT_INT);
+		right_ = cast;
+		rc = right_->inferType ();
+	}
+
+	// Done
+	return rc;
 }
 
 std::string PowerOperatorNode::toString ()

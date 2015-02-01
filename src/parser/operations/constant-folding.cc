@@ -306,6 +306,284 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					}
 					break;
 
+				case OT_MULTIPLICATION:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left * i_right);
+						break;
+
+					case BT_FLOAT:
+						new_val = new FloatValueNode (f_left * f_right);
+						break;
+
+					case BT_STRING:
+						assert (false);
+						Error::internalError ("cannot fold MULTIPLICATION on STRING types");
+						// TODO: error case
+						return node;
+					}
+					break;
+
+				case OT_DIVISION:
+				case OT_INTDIVISION:
+					switch (t_left)
+					{
+					case BT_INT:
+						if (i_right == 0)
+						{
+							Error::semanticError ("division by zero while folding constants", right);
+						}
+						else
+						{
+							new_val = new IntegerValueNode (i_left / i_right);
+						}
+						break;
+
+					case BT_FLOAT:
+						if (f_right == 0.0f)
+						{
+							Error::semanticError ("division by zero while folding constants", right);
+						}
+						else
+						{
+							new_val = new FloatValueNode (f_left / f_right);
+						}
+						break;
+
+					case BT_STRING:
+						assert (false);
+						Error::internalError ("cannot fold DIVISION on STRING types");
+						// TODO: error case
+						return node;
+					}
+					break;
+
+				case OT_MODULO:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left % i_right);
+						break;
+					case BT_FLOAT:
+						assert (false);
+						Error::internalError ("cannot fold MODULO on FLOAT types");
+						// TODO: error case
+						return node;
+						break;
+					case BT_STRING:
+						assert (false);
+						Error::internalError ("cannot fold MINUS on STRING types");
+						// TODO: error case
+						return node;
+					default:
+						break;
+					}
+					break;
+
+				case OT_POWER:
+					switch (t_left)
+					{
+					case BT_INT:
+						{
+							if (i_right >= 0)
+							{
+								new_val = new IntegerValueNode ((int) pow (i_left, i_right));
+							}
+							else
+							{
+								Error::semanticError ("negative INTEGER base for POWER operator", right);
+							}
+						}
+						break;
+					case BT_FLOAT:
+						if (i_left >= 0 && i_right >= 0)
+						{
+							new_val = new FloatValueNode (log (i_left) / log (i_right));
+						}
+						else
+						{
+							Error::semanticError ("negative FLOAT base or exponent for POWER operator", node);
+						}
+						break;
+					case BT_STRING:
+						assert (false);
+						Error::internalError ("cannot fold OR on STRING types");
+						// TODO: error case
+						return node;
+					default:
+						break;
+					}
+					break;
+
+				case OT_GT:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left > i_right ? -1 : 0);
+						break;
+					case BT_FLOAT:
+						new_val = new IntegerValueNode (f_left > f_right ? -1 : 0);
+						break;
+					case BT_STRING:
+						new_val = new IntegerValueNode (s_left.compare (s_right) > 0 ? -1 : 0);
+						break;
+					default:
+						break;
+					}
+					break;
+
+				case OT_LT:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left < i_right ? -1 : 0);
+						break;
+					case BT_FLOAT:
+						new_val = new IntegerValueNode (f_left < f_right ? -1 : 0);
+						break;
+					case BT_STRING:
+						new_val = new IntegerValueNode (s_left.compare (s_right) < 0 ? -1 : 0);
+						break;
+					default:
+						break;
+					}
+					break;
+
+				case OT_GT_EQ:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left >= i_right ? -1 : 0);
+						break;
+					case BT_FLOAT:
+						new_val = new IntegerValueNode (f_left >= f_right ? -1 : 0);
+						break;
+					case BT_STRING:
+						new_val = new IntegerValueNode (s_left.compare (s_right) >= 0 ? -1 : 0);
+						break;
+					default:
+						break;
+					}
+					break;
+
+				case OT_LT_EQ:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left <= i_right ? -1 : 0);
+						break;
+					case BT_FLOAT:
+						new_val = new IntegerValueNode (f_left <= f_right ? -1 : 0);
+						break;
+					case BT_STRING:
+						new_val = new IntegerValueNode (s_left.compare (s_right) <= 0 ? -1 : 0);
+						break;
+					default:
+						break;
+					}
+					break;
+
+				case OT_EQUAL:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left == i_right ? -1 : 0);
+						break;
+					case BT_FLOAT:
+						new_val = new IntegerValueNode (f_left == f_right ? -1 : 0);
+						break;
+					case BT_STRING:
+						new_val = new IntegerValueNode (s_left.compare (s_right) == 0 ? -1 : 0);
+						break;
+					default:
+						break;
+					}
+					break;
+
+				case OT_NOT_EQUAL:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left != i_right ? -1 : 0);
+						break;
+					case BT_FLOAT:
+						new_val = new IntegerValueNode (f_left != f_right ? -1 : 0);
+						break;
+					case BT_STRING:
+						new_val = new IntegerValueNode (s_left.compare (s_right) != 0 ? -1 : 0);
+						break;
+					default:
+						break;
+					}
+					break;
+
+				case OT_AND:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left & i_right);
+						break;
+					case BT_FLOAT:
+						assert (false);
+						Error::internalError ("cannot fold AND on FLOAT types");
+						// TODO: error case
+						return node;
+						break;
+					case BT_STRING:
+						assert (false);
+						Error::internalError ("cannot fold AND on STRING types");
+						// TODO: error case
+						return node;
+					default:
+						break;
+					}
+					break;
+
+				case OT_OR:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left | i_right);
+						break;
+					case BT_FLOAT:
+						assert (false);
+						Error::internalError ("cannot fold OR on FLOAT types");
+						// TODO: error case
+						return node;
+						break;
+					case BT_STRING:
+						assert (false);
+						Error::internalError ("cannot fold OR on STRING types");
+						// TODO: error case
+						return node;
+					default:
+						break;
+					}
+					break;
+
+				case OT_XOR:
+					switch (t_left)
+					{
+					case BT_INT:
+						new_val = new IntegerValueNode (i_left ^ i_right);
+						break;
+					case BT_FLOAT:
+						assert (false);
+						Error::internalError ("cannot fold XOR on FLOAT types");
+						// TODO: error case
+						return node;
+						break;
+					case BT_STRING:
+						assert (false);
+						Error::internalError ("cannot fold XOR on STRING types");
+						// TODO: error case
+						return node;
+					default:
+						break;
+					}
+					break;
+
 				default:
 					// Don't treat this as actual error case; if we missed an op, we don't
 					// want the user to feel this pain. Better a slower program than an error.
