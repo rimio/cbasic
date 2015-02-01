@@ -20,12 +20,12 @@ StringValueNode::StringValueNode (std::string val)
 
 std::string StringValueNode::getValue ()
 {
-	return std::string (value_);
+	return value_;
 }
 
 std::string StringValueNode::toString ()
 {
-	return std::string (value_);
+	return "\"" + value_ + "\"";
 }
 
 std::string IntegerValueNode::toString()

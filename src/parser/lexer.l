@@ -61,7 +61,11 @@ loc.step();
 [0-9]*[.][0-9]+						{ yylval->fval = atof (yytext); return Parser::token::FLITERAL; }
 [0-9]*[.][0-9]+[Ee][-]?[0-9]+		{ yylval->fval = atof (yytext); return Parser::token::FLITERAL; }
 [0-9]+[Ee][-]?[0-9]+				{ yylval->fval = atof (yytext); return Parser::token::FLITERAL; }
-["][^"]*["]							{ yylval->sval = new std::string (yytext); return Parser::token::SLITERAL; }
+["][^"]*["]							{
+										std::string strq (yytext);
+										yylval->sval = new std::string (strq.substr (1, strq.length () - 2));
+										return Parser::token::SLITERAL;
+									}
 
 [a-zA-Z][a-zA-Z0-9.]*[%]			{ yylval->sval = new std::string (yytext, strlen (yytext) - 1); return Parser::token::IIDENTIFIER; }
 [a-zA-Z][a-zA-Z0-9.]*[$]			{ yylval->sval = new std::string (yytext, strlen (yytext) - 1); return Parser::token::SIDENTIFIER; }
