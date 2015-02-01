@@ -1,6 +1,12 @@
 #include <fstream>
 #include "parser-context.h"
 
+#include "parser/operations/type-checking.h"
+#include "parser/operations/find-symbols.h"
+#include "parser/operations/constant-folding.h"
+#include "symbols/symbol-table.h"
+#include "tree-walker.h"
+
 ParserContext::ParserContext ()
 {
 	lexer_ = nullptr;
@@ -53,6 +59,21 @@ int ParserContext::parseFile (std::string &filename)
 		Error::error ("file parsing failed");
 		return ER_FAILED;
 	}
+
+	// All ok
+	return NO_ERROR;
+}
+
+int ParserContext::semanticAnalysis ()
+{
+	// Find symbols
+	root_node_ = TreeWalker::leafToRoot (root_node_, find_symbols, false);
+
+	// Check types
+	root_node_ = TreeWalker::leafToRoot (root_node_, check_types, false);
+
+	// Fold constants
+	root_node_ = TreeWalker::leafToRoot (root_node_, fold_constants, false);
 
 	// All ok
 	return NO_ERROR;

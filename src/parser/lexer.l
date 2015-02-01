@@ -13,14 +13,13 @@
 %option c++
 
 %{
-static yy::location loc;
-#define YY_USER_ACTION loc.columns(yyleng);
+#define YY_USER_ACTION location_.columns(yyleng);
 %}
 
 %%
 
 %{
-loc.step();
+location_.step();
 %}
 
 "("								{ return Parser::token::PAR_OPEN; }
@@ -71,9 +70,9 @@ loc.step();
 [a-zA-Z][a-zA-Z0-9.]*[$]			{ yylval->sval = new std::string (yytext, strlen (yytext) - 1); return Parser::token::SIDENTIFIER; }
 [a-zA-Z][a-zA-Z0-9.]*				{ yylval->sval = new std::string (yytext); return Parser::token::FIDENTIFIER; }
 
-[ \t]							{ /* eat them */ loc.step (); }
-[\n]+							{ loc.lines (yyleng); loc.step (); return Parser::token::NEWLINE; }
+[ \t]							{ /* eat them */ location_.step (); }
+[\n]+							{ location_.lines (yyleng); location_.step (); return Parser::token::NEWLINE; }
 
-.								{ Error::syntaxError ("unrecognized token '" + std::string (yytext) + "'", loc.begin.line, loc.begin.column); }
+.								{ Error::syntaxError ("unrecognized token '" + std::string (yytext) + "'", location_.begin.line, location_.begin.column); }
 
 %%

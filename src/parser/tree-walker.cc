@@ -27,6 +27,9 @@ ParserNode *TreeWalker::leafToRootWalk (ParserNode *node, struct TreeWalkContext
 			// Handle change
 			if (ret != *child)
 			{
+				ret->setNext ((*child)->getNext ());
+				(*child)->setNext (nullptr);
+				delete *child;
 				*child = ret;
 			}
 		}
@@ -42,6 +45,9 @@ ParserNode *TreeWalker::leafToRootWalk (ParserNode *node, struct TreeWalkContext
 		ParserNode *new_next = leafToRootWalk (next, context, callback);
 		if (new_next != next)
 		{
+			new_next->setNext (next->getNext ());
+			next->setNext (nullptr);
+			delete next;
 			node->setNext (new_next);
 		}
 	}
@@ -69,12 +75,15 @@ ParserNode *TreeWalker::leafToRoot (ParserNode *root, WALK_CALLBACK callback, bo
 	ParserNode *new_root = leafToRootWalk (root, &context, callback);
 	if (new_root != root)
 	{
+		root->setNext (nullptr);
 		delete root;
-		root = nullptr;
 	}
 
 	// Relink
-	new_root->setNext (saved_list);
+	if (omit_root_list)
+	{
+		new_root->setNext (saved_list);
+	}
 
 	// All ok
 	return new_root;

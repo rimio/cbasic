@@ -342,7 +342,7 @@ public:
 class CastOperatorNode : public OperatorNode
 {
 public:
-	CastOperatorNode (TypedParserNode *l, BasicType ttype) : OperatorNode (l, ttype) { };
+	CastOperatorNode (TypedParserNode *l, BasicType ttype);
 
 	std::string toString ();
 	OperatorType getOperatorType () const { return OT_CAST; }

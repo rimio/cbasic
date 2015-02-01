@@ -41,13 +41,14 @@ private:
 	IdentifierNode *identifier_;
 
 	// Right hand side - expression
-	ParserNode *expression_;
+	TypedParserNode *expression_;
 
 public:
-	AssignmentStatementNode (IdentifierNode *iden, ParserNode *expr) : identifier_ (iden), expression_ (expr) { }
+	AssignmentStatementNode (IdentifierNode *iden, TypedParserNode *expr) : identifier_ (iden), expression_ (expr) { }
+	virtual ~AssignmentStatementNode ();
 
 	IdentifierNode *getIdentifier () const { return identifier_; }
-	ParserNode *getExpression () const { return expression_; }
+	TypedParserNode *getExpression () const { return expression_; }
 
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_ASSIGNMENT; }
@@ -56,7 +57,7 @@ public:
 	std::string toString ();
 	std::string print ();
 	std::list<ParserNode *> getChildren () { return { identifier_, expression_ }; }
-	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &identifier_, &expression_ }; }
+	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &identifier_, (ParserNode **)&expression_ }; }
 };
 
 //
@@ -76,6 +77,7 @@ private:
 
 public:
 	AllocationStatementNode (IdentifierNode *iden, ParserNode *dims) : identifier_ (iden), dimension_list_ (dims) { };
+	virtual ~AllocationStatementNode ();
 
 	IdentifierNode *getIdentifier () const { return identifier_; }
 	ParserNode *getDimensionList () const { return dimension_list_; }

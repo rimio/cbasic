@@ -28,7 +28,11 @@ public:
 	ParserNode *getRoot () const { return root_node_; }
 
 	// Parse a file, given the filename
+	// This will do lexical analysis and syntax analysis
 	int parseFile (std::string& filename);
+
+	// Do semantic analysis on program
+	int semanticAnalysis ();
 
 	// Print the parse tree
 	int printTree (std::ostream &stream);

@@ -15,6 +15,8 @@ struct TreeWalkContext
 
 //
 // Walk function callback signature
+// NOTE: If callback function returns node other than input node, it must call unlink() on the old node.
+// The walk function will delete the old node and link the new node in it's place (parent reference and list reference).
 //
 typedef ParserNode * (*WALK_CALLBACK)(ParserNode *, struct TreeWalkContext *);
 

@@ -8,10 +8,6 @@
 #include "parser/parser-context.h"
 #include "symbols/symbol-table.h"
 
-#include "parser/operations/type-checking.h"
-#include "parser/operations/find-symbols.h"
-#include "parser/operations/constant-folding.h"
-
 //
 // getopt_long options
 //
@@ -195,14 +191,12 @@ int main (int argc, char **argv)
 	std::cout << std::endl << "Original program: " << std::endl;
 	pc->printProgram (std::cout);
 
-	// Find symbols
-	TreeWalker::leafToRoot (pc->getRoot (), find_symbols, false);
-
-	// Check types
-	TreeWalker::leafToRoot (pc->getRoot (), check_types, false);
-
-	// Fold constants
-	TreeWalker::leafToRoot (pc->getRoot (), fold_constants, false);
+	// Semantic analysis
+	if (pc->semanticAnalysis () != NO_ERROR)
+	{
+		// Error should have been printed
+		return ER_FAILED;
+	}
 
 	// Print symbol table
 	std::cout << std::endl << std::endl << "Symbol table: " << std::endl;

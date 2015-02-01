@@ -1,5 +1,13 @@
 #include "statement-nodes.h"
 
+AssignmentStatementNode::~AssignmentStatementNode ()
+{
+	if (identifier_ != nullptr)
+		delete identifier_;
+	if (expression_ != nullptr)
+		delete expression_;
+}
+
 std::string AssignmentStatementNode::toString ()
 {
 	return "=";
@@ -13,6 +21,18 @@ std::string AssignmentStatementNode::print ()
 		this_stmt = this_stmt + "\n" + next_->print ();
 	}
 	return this_stmt;
+}
+
+AllocationStatementNode::~AllocationStatementNode ()
+{
+	if (identifier_ != nullptr)
+		delete identifier_;
+
+	for (ParserNode *list = dimension_list_, *next = nullptr; list != nullptr; list = next)
+	{
+		next = list->getNext ();
+		delete list;
+	}
 }
 
 std::string AllocationStatementNode::toString ()

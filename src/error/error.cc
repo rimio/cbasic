@@ -24,5 +24,8 @@ void Error::syntaxError (const std::string error, int line, int column)
 
 void Error::semanticError (const std::string error, ParserNode *node)
 {
-	Error::reportError ("Semantic error at line ??? column ???: " + error);
+	yy::location loc = node->getLocation ();
+
+	Error::reportError ("Semantic error at line " + std::to_string (loc.begin.line)
+						+ " column " + std::to_string (loc.begin.column) +  ": " + error);
 }

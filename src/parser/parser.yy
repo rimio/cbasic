@@ -51,36 +51,36 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 }
 
 %token AND
-%token BACKSLASH
-%token COMMA
+%token BACKSLASH				"'\\'"
+%token COMMA					"','"
 %token DIM
-%token END 0
-%token EQUAL
-%token GT
-%token GT_EQ
+%token END					0	"end of file"
+%token EQUAL					"'='"
+%token GT						"GT"
+%token GT_EQ					"GE"
 %token LET
-%token LT
-%token LT_EQ
-%token MINUS
-%token MODULO
-%token NEWLINE
+%token LT						"LT"
+%token LT_EQ					"LE"
+%token MINUS					"'-'"
+%token MODULO					"MOD"
+%token NEWLINE					"newline"
 %token NOT
-%token NOT_EQUAL
+%token NOT_EQUAL				"'<>'"
 %token OR
-%token PAR_CLOSE
-%token PAR_OPEN
-%token PLUS
-%token POWER
-%token SLASH
-%token STAR
+%token PAR_CLOSE				"')'"
+%token PAR_OPEN					"'('"
+%token PLUS						"'+'"
+%token POWER					"'^'"
+%token SLASH					"'/'"
+%token STAR						"'*'"
 %token XOR
 
-%token <ival> ILITERAL
-%token <fval> FLITERAL
-%token <sval> SLITERAL
-%token <sval> IIDENTIFIER
-%token <sval> FIDENTIFIER
-%token <sval> SIDENTIFIER
+%token <ival> ILITERAL			"integer literal"
+%token <fval> FLITERAL			"float literal"
+%token <sval> SLITERAL			"string literal"
+%token <sval> IIDENTIFIER		"integer identifier"
+%token <sval> FIDENTIFIER		"float identifier"
+%token <sval> SIDENTIFIER		"string identifier"
 
 
 %type <statement_node>	allocation_statement_part
@@ -156,6 +156,7 @@ statement
 	: LET identifier EQUAL expression
 		{
 			$$ = new AssignmentStatementNode ($2, $4);
+			$$->setLocation (@2);
 		}
 	| DIM allocation_statement_part_list
 		{
@@ -179,6 +180,7 @@ allocation_statement_part
 	: identifier PAR_OPEN expression_list PAR_CLOSE
 		{
 			$$ = new AllocationStatementNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	;
 
@@ -205,10 +207,12 @@ or_xor_op
 	: or_xor_op OR or_xor_op
 		{
 			$$ = new OrOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| or_xor_op XOR or_xor_op
 		{
 			$$ = new XorOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| and_op
 		{
@@ -220,6 +224,7 @@ and_op
 	: and_op AND and_op
 		{
 			$$ = new AndOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| not_op
 		{
@@ -231,6 +236,7 @@ not_op
 	: NOT not_op
 		{
 			$$ = new NotOperatorNode ($2);
+			$$->setLocation (@1);
 		}
 	| comparison_op
 		{
@@ -242,26 +248,32 @@ comparison_op
 	: comparison_op LT comparison_op
 		{	
 			$$ = new LessThanOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| comparison_op LT_EQ comparison_op
 		{
 			$$ = new LessThanOrEqualOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| comparison_op GT comparison_op
 		{
 			$$ = new GreaterThanOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| comparison_op GT_EQ comparison_op
 		{
 			$$ = new GreaterThanOrEqualOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| comparison_op EQUAL comparison_op
 		{
 			$$ = new EqualOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| comparison_op NOT_EQUAL comparison_op
 		{
 			$$ = new NotEqualOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| plus_minus_op
 		{
@@ -273,10 +285,12 @@ plus_minus_op
 	: plus_minus_op PLUS plus_minus_op
 		{
 			$$ = new PlusOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| plus_minus_op MINUS plus_minus_op
 		{
 			$$ = new MinusOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| modulo_op
 		{
@@ -288,6 +302,7 @@ modulo_op
 	: modulo_op MODULO modulo_op
 		{
 			$$ = new ModuloOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| intdiv_op
 		{
@@ -298,6 +313,7 @@ intdiv_op
 	: intdiv_op BACKSLASH intdiv_op
 		{
 			$$ = new IntDivisionOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| mul_div_op
 		{
@@ -308,10 +324,12 @@ mul_div_op
 	: mul_div_op STAR mul_div_op
 		{
 			$$ = new MultiplicationOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| mul_div_op SLASH mul_div_op
 		{
 			$$ = new DivisionOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| negation_op
 		{
@@ -323,6 +341,7 @@ negation_op
 	: MINUS negation_op
 		{
 			$$ = new MinusOperatorNode ($2, nullptr);
+			$$->setLocation (@1);
 
 			// Check for chained negations
 			if ($2->getNodeType () == PT_OPERATOR)
@@ -347,6 +366,7 @@ power_op
 	: power_op POWER power_op
 		{
 			$$ = new PowerOperatorNode ($1, $3);
+			$$->setLocation (@1);
 		}
 	| operand
 		{
@@ -369,14 +389,17 @@ identifier
 	: IIDENTIFIER
 		{
 			$$ = new IdentifierNode (*$1, BT_INT);
+			$$->setLocation (@1);
 		}
 	| FIDENTIFIER
 		{
 			$$ = new IdentifierNode (*$1, BT_FLOAT);
+			$$->setLocation (@1);
 		}
 	| SIDENTIFIER
 		{
 			$$ = new IdentifierNode (*$1, BT_STRING);
+			$$->setLocation (@1);
 		}
 	;
 
@@ -384,14 +407,17 @@ literal
 	: ILITERAL
 		{
 			$$ = new IntegerValueNode ($1);
+			$$->setLocation (@1);
 		}
 	| FLITERAL
 		{
 			$$ = new FloatValueNode ($1);
+			$$->setLocation (@1);
 		}
 	| SLITERAL
 		{
 			$$ = new StringValueNode (*$1);
+			$$->setLocation (@1);
 		}
 	;
 
@@ -404,5 +430,8 @@ void Parser::error (const Parser::location_type& loc, const std::string &err)
 
 static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lexer &lexer, ParserContext &context)
 {
-	return lexer.yylex (yylval);
+	int rc = lexer.yylex (yylval);
+	*loc = lexer.getLocation ();
+	return rc;
 }
+

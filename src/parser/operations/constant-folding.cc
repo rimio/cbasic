@@ -40,7 +40,8 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_FLOAT:
 					{
 						ValueNode *new_val = new IntegerValueNode (roundf ( ((FloatValueNode *)val)->getValue () ));
-						delete node;
+						new_val->setLocation (node->getLocation ());
+						node->unlink ();
 						return new_val;
 					}
 
@@ -64,7 +65,8 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_INT:
 					{
 						ValueNode *new_val = new FloatValueNode ( ((IntegerValueNode *)val)->getValue () );
-						delete node;
+						new_val->setLocation (node->getLocation ());
+						node->unlink ();
 						return new_val;
 					}
 
@@ -138,7 +140,6 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					Error::internalError ("operand of unknown type");
 					// TODO: error case
 					return node;
-					return node;
 				}
 				break;
 
@@ -161,7 +162,6 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					Error::internalError ("operand of unknown type");
 					// TODO: error case
 					return node;
-					return node;
 				}
 				break;
 
@@ -176,7 +176,6 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					Error::internalError ("cannot fold NOT on FLOAT types");
 					// TODO: error case
 					return node;
-					break;
 				case BT_STRING:
 					assert (false);
 					Error::internalError ("cannot fold NOT on STRING types");
@@ -186,7 +185,6 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					assert (false);
 					Error::internalError ("operand of unknown type");
 					// TODO: error case
-					return node;
 					return node;
 				}
 				break;
@@ -207,7 +205,8 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 			// Replace node?
 			if (new_val != nullptr)
 			{
-				delete node;
+				new_val->setLocation (node->getLocation ());
+				node->unlink ();
 				return new_val;
 			}
 		}
@@ -602,7 +601,8 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				// Replace node?
 				if (new_val != nullptr)
 				{
-					delete node;
+					new_val->setLocation (node->getLocation ());
+					node->unlink ();
 					return new_val;
 				}
 			}

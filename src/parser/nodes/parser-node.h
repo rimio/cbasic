@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include "symbols/basic-types.h"
+#include "parser/location.hh"
 
 //
 // Parser node types
@@ -28,13 +29,25 @@ class ParserNode
 {
 protected:
 	// Disallow instances of ParserNode
-	ParserNode () : next_ (nullptr) { };
+	ParserNode ();
 
 	// Next node in list
 	ParserNode *next_;
 
+	// Position in input buffer
+	yy::location location_;
+
 public:
-	virtual ~ParserNode () { };
+	virtual ~ParserNode ();
+
+	// Unlink all children.
+	// NOTE: Caller must make sure all references have been either reused or freed.
+	//       Otherwise, a memory leak will occur.
+	void unlink ();
+
+	// Location getter/setter
+	yy::location getLocation () const { return location_; }
+	void setLocation (yy::location loc) { location_ = loc; }
 
 	// Next node getters and setters
 	ParserNode *getNext () const { return next_; }
