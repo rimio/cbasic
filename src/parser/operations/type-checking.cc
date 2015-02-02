@@ -62,9 +62,9 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 		if (st->getStatementType () == ST_WHILE)
 		{
 			WhileStatementNode *wh = (WhileStatementNode *)node;
-			if (wh->getCondition ()->getType () == BT_STRING)
+			if (wh->getCondition ()->getType () != BT_INT)
 			{
-				Error::semanticError ("WHILE statement condition cannot be of type STRING", wh->getCondition ());
+				Error::semanticError ("WHILE statement condition must be of type INT", wh->getCondition ());
 				return node;
 			}
 		}
@@ -73,9 +73,9 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 		if (st->getStatementType () == ST_IF)
 		{
 			IfStatementNode *if_ = (IfStatementNode *)node;
-			if (if_->getCondition ()->getType () == BT_STRING)
+			if (if_->getCondition ()->getType () != BT_INT)
 			{
-				Error::semanticError ("WHILE statement condition cannot be of type STRING", if_->getCondition ());
+				Error::semanticError ("IF statement condition must be of type INT", if_->getCondition ());
 				return node;
 			}
 		}
