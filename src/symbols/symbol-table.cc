@@ -5,6 +5,18 @@
 
 std::unordered_map<std::string, Symbol *> SymbolTable::table_;
 
+std::string symbol_type_to_string (SymbolType st)
+{
+	switch (st)
+	{
+	case SY_VARIABLE:
+		return "VARIABLE";
+
+	default:
+		return "unknown";
+	}
+}
+
 void SymbolTable::clear ()
 {
 	table_.clear ();

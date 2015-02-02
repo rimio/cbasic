@@ -42,11 +42,13 @@ set (HEADER_FILES
 	${SOURCE_DIR}/parser/tree-walker.h
 	${SOURCE_DIR}/symbols/symbol-table.h
 	${SOURCE_DIR}/symbols/basic-types.h
+	${SOURCE_DIR}/ilang/il-instructions.h
 
 	# parser operations
 	${SOURCE_DIR}/parser/operations/constant-folding.h
 	${SOURCE_DIR}/parser/operations/find-symbols.h
 	${SOURCE_DIR}/parser/operations/type-checking.h
+	${SOURCE_DIR}/parser/operations/resolve-identifiers.h
 
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.h
@@ -69,11 +71,13 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/parser/tree-walker.cc
 	${SOURCE_DIR}/symbols/symbol-table.cc
 	${SOURCE_DIR}/symbols/basic-types.cc
+	${SOURCE_DIR}/ilang/il-instructions.cc
 
 	# parser operations
 	${SOURCE_DIR}/parser/operations/constant-folding.cc
 	${SOURCE_DIR}/parser/operations/find-symbols.cc
 	${SOURCE_DIR}/parser/operations/type-checking.cc
+	${SOURCE_DIR}/parser/operations/resolve-identifiers.cc
 	
 	# parser nodes
 	${SOURCE_DIR}/parser/nodes/parser-node.cc

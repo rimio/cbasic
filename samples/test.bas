@@ -3,7 +3,7 @@ let AnothEr.iDent% = 2 + 3 / 4 / 5
 let Yet.Another.Id = 1 mod 2
 let hbt = 0H + 0b + 0ffh + 101B
 
-let gti = 1 < 2 > 3 = 4
+let gti = 1 < 2 > 3 = 4 + hbt%
 let x = NOT 1 OR 2 AND ABC.d0e% XOR 3
 
 let stc$ = "ana" + "are"

@@ -13,6 +13,8 @@ enum SymbolType
 	SY_VARIABLE
 };
 
+extern std::string symbol_type_to_string (SymbolType st);
+
 //
 // Symbol base class
 //

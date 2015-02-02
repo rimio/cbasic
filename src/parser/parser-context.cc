@@ -3,6 +3,7 @@
 
 #include "parser/operations/type-checking.h"
 #include "parser/operations/find-symbols.h"
+#include "parser/operations/resolve-identifiers.h"
 #include "parser/operations/constant-folding.h"
 #include "symbols/symbol-table.h"
 #include "tree-walker.h"
@@ -68,6 +69,9 @@ int ParserContext::semanticAnalysis ()
 {
 	// Find symbols
 	root_node_ = TreeWalker::leafToRoot (root_node_, find_symbols, false);
+
+	// Resolve identifiers
+	root_node_ = TreeWalker::leafToRoot (root_node_, resolve_identifiers, false);
 
 	// Check types
 	root_node_ = TreeWalker::leafToRoot (root_node_, check_types, false);
