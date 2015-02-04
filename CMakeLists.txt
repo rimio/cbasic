@@ -44,6 +44,7 @@ set (HEADER_FILES
 	${SOURCE_DIR}/symbols/basic-types.h
 	${SOURCE_DIR}/ilang/il-instructions.h
 	${SOURCE_DIR}/ilang/il-address.h
+	${SOURCE_DIR}/ilang/il-block.h
 
 	# parser operations
 	${SOURCE_DIR}/parser/operations/constant-folding.h
@@ -73,6 +74,7 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/symbols/symbol-table.cc
 	${SOURCE_DIR}/ilang/il-instructions.cc
 	${SOURCE_DIR}/ilang/il-address.cc
+	${SOURCE_DIR}/ilang/il-block.cc
 
 	# parser operations
 	${SOURCE_DIR}/parser/operations/constant-folding.cc

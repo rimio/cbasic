@@ -33,7 +33,7 @@ protected:
 	Symbol (std::string name, std::string scope) : name_ (name), scope_ (scope) { };
 
 public:
-	~Symbol () { };
+	virtual ~Symbol () { };
 
 	// Getter for name and scope
 	std::string getName () const { return name_; }
