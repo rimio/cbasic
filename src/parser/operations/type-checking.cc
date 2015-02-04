@@ -33,8 +33,8 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 				// Check STRING conversions
 				if (id_type == BT_STRING || expr_type == BT_STRING)
 				{
-					Error::semanticError ("cannot assign " + basic_type_to_string (expr_type) + " expression to "
-										  + basic_type_to_string (id_type) + " variable", asn->getExpression ());
+					Error::semanticError ("cannot assign " + BasicTypeAlias [expr_type] + " expression to "
+										  + BasicTypeAlias [id_type] + " variable", asn->getExpression ());
 					return node;
 				}
 

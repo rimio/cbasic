@@ -10,10 +10,13 @@
 //
 enum SymbolType
 {
-	SY_VARIABLE
+	SY_VARIABLE = 0
 };
 
-extern std::string symbol_type_to_string (SymbolType st);
+//
+// Symbol aliases
+//
+static std::string SymbolTypeAlias[] = { "VARIABLE" };
 
 //
 // Symbol base class

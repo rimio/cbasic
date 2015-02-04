@@ -8,12 +8,15 @@
 //
 typedef enum
 {
-	BT_UNKNOWN,
+	BT_UNKNOWN = 0,
 	BT_STRING,
 	BT_INT,
 	BT_FLOAT
 } BasicType;
 
-extern std::string basic_type_to_string (BasicType bt);
+//
+// Basic type aliases
+//
+static std::string BasicTypeAlias[] = { "UNKNOWN", "STRING", "INT", "FLOAT" };
 
 #endif

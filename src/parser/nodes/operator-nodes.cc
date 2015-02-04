@@ -370,7 +370,7 @@ std::string XorOperatorNode::toString ()
 
 std::string CastOperatorNode::toString ()
 {
-	return std::string ("cast as " + basic_type_to_string (return_type_));
+	return std::string ("cast as " + BasicTypeAlias[return_type_]);
 }
 
 int CastOperatorNode::inferType ()
@@ -379,8 +379,8 @@ int CastOperatorNode::inferType ()
 		|| (return_type_ != BT_STRING && left_->getType () == BT_STRING))
 	{
 		Error::semanticError ("cannot convert expression of type "
-							  + basic_type_to_string (left_->getType ()) + " to type "
-							  + basic_type_to_string (return_type_),
+							  + BasicTypeAlias [left_->getType ()] + " to type "
+							  + BasicTypeAlias [return_type_],
 							  left_);
 		return ER_FAILED;
 	}

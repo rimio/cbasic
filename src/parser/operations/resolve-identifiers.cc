@@ -25,7 +25,7 @@ ParserNode *resolve_identifiers (ParserNode *node, struct TreeWalkContext *conte
 		// Check it's a variable type symbol
 		if (sym->getSymbolType () != SY_VARIABLE)
 		{
-			Error::semanticError ("VARIABLE symbol expected, found " + symbol_type_to_string (sym->getSymbolType ()),
+			Error::semanticError ("VARIABLE symbol expected, found " + SymbolTypeAlias[sym->getSymbolType ()],
 								  node);
 			// TODO: error case
 			return node;
@@ -35,8 +35,8 @@ ParserNode *resolve_identifiers (ParserNode *node, struct TreeWalkContext *conte
 		VariableSymbol *vsym = (VariableSymbol *) sym;
 		if (vsym->getType () != in->getType ())
 		{
-			Error::semanticError ("cannot map identifier of type " + basic_type_to_string (in->getType ())
-								  + " to symbol of type " + basic_type_to_string (vsym->getType ()),
+			Error::semanticError ("cannot map identifier of type " + BasicTypeAlias [in->getType ()]
+								  + " to symbol of type " + BasicTypeAlias [vsym->getType ()],
 								  node);
 			// TODO: error case
 			return node;

@@ -71,7 +71,6 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/parser/parser-context.cc
 	${SOURCE_DIR}/parser/tree-walker.cc
 	${SOURCE_DIR}/symbols/symbol-table.cc
-	${SOURCE_DIR}/symbols/basic-types.cc
 	${SOURCE_DIR}/ilang/il-instructions.cc
 	${SOURCE_DIR}/ilang/il-address.cc
 

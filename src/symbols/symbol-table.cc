@@ -5,18 +5,6 @@
 
 std::unordered_map<std::string, Symbol *> SymbolTable::table_;
 
-std::string symbol_type_to_string (SymbolType st)
-{
-	switch (st)
-	{
-	case SY_VARIABLE:
-		return "VARIABLE";
-
-	default:
-		return "unknown";
-	}
-}
-
 void SymbolTable::clear ()
 {
 	table_.clear ();
@@ -57,7 +45,7 @@ void SymbolTable::debugPrint ()
 		case SY_VARIABLE:
 			vs = (VariableSymbol *) sym;
 			std::cout << std::setw (22) << std::left << std::setfill('.');
-			std::cout << " VARIABLE (" + basic_type_to_string (vs->getType ()) + ") ";
+			std::cout << " VARIABLE (" + BasicTypeAlias [vs->getType ()] + ") ";
 			std::cout << std::setw (0) << " " + sym->getName() << std::endl;
 			break;
 
