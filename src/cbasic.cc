@@ -73,6 +73,7 @@ void print_usage ()
 	std::cout << "                            2 - print abstract syntax tree after parsing" << std::endl;
 	std::cout << "                            4 - print symbol tables after semantic analysis" << std::endl;
 	std::cout << "                            8 - print program after semantic analysis" << std::endl;
+	std::cout << "                           16 - print generated intermediate language program" << std::endl;
 }
 
 //
@@ -263,6 +264,24 @@ int main (int argc, char **argv)
 		std::cout << std::endl << "[VERBOSE] Final program: " << std::endl;
 		pc->printProgram (std::cout);
 		std::cout << "[VERBOSE END]" << std::endl << std::endl;
+	}
+
+	//
+	// INTERMEDIATE CODE GENERATION
+	//
+	IlBlock *program = pc->generateIlCode ();
+	if (program == nullptr)
+	{
+		// Error message should have been set
+		return ER_FAILED;
+	}
+
+	// VERBOSE code
+	if (VERBOSE_PRINT_GENERATED_IL)
+	{
+		std::cout << std::endl << "[VERBOSE] Generated IL program: " << std::endl;
+		program->debugPrint ();
+		std::cout <<  "[VERBOSE END]" << std::endl << std::endl;
 	}
 
 	// All ok

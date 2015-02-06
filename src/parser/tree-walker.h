@@ -4,6 +4,7 @@
 #include <list>
 #include <stack>
 #include "nodes/parser-node.h"
+#include "ilang/il-block.h"
 
 //
 // Tree walk context
@@ -36,6 +37,11 @@ public:
 	// omit_root_list (in): if true, will not walk root->getNext().
 	// Returns root or new tree pointer (if root was replaced).
 	static ParserNode *leafToRoot (ParserNode *root, WALK_CALLBACK callback, bool omit_root_list);
+
+	// Function for the walk specific for code generation.
+	// This will only walk the root list and handle function definitions and such high level management.
+	// The actual recursion should be implemented in the node's generateIlCode() function.
+	static int codeGenerationWalk (ParserNode *root, IlBlock *block);
 };
 
 #endif

@@ -1,14 +1,13 @@
 #include "il-block.h"
+#include <iostream>
 
-IlInstruction *IlBlock::getInstruction (int index) const
+IlBlock::~IlBlock ()
 {
-	if (index >= 0 && index < instructions_.size ())
+	for (std::list<IlInstruction *>::iterator it = instructions_.begin ();
+		 it != instructions_.end (); it ++)
 	{
-		return instructions_[index];
-	}
-	else
-	{
-		return nullptr;
+		// Because list of pointers
+		delete *it;
 	}
 }
 
@@ -17,8 +16,11 @@ void IlBlock::addInstruction (IlInstruction *ins)
 	instructions_.push_back (ins);
 }
 
-void IlBlock::join (IlBlock *block)
+void IlBlock::debugPrint ()
 {
-	// TODO: met, to be continued
-	//instructions_.splice (instructions_.end(), block->instructions_);
+	for (std::list<IlInstruction *>::iterator it = instructions_.begin ();
+		 it != instructions_.end (); it ++)
+	{
+		std::cout << (*it)->toString () << std::endl;
+	}
 }

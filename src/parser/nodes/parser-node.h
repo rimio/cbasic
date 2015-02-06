@@ -5,6 +5,7 @@
 #include <list>
 #include "symbols/basic-types.h"
 #include "parser/location.hh"
+#include "ilang/il-block.h"
 
 //
 // Parser node types
@@ -67,6 +68,9 @@ public:
 
 	// Returns a list of pointers to all children addresses
 	virtual std::list<ParserNode **> getChildrenReferences () = 0;
+
+	// Generate intermediate language code
+	virtual int generateIlCode (IlBlock *block) { return 0; }
 };
 
 #endif

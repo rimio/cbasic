@@ -1,6 +1,8 @@
 #include <fstream>
 #include "parser-context.h"
 
+#include "nodes/statement-nodes.h"
+
 #include "parser/operations/type-checking.h"
 #include "parser/operations/find-symbols.h"
 #include "parser/operations/resolve-identifiers.h"
@@ -139,5 +141,28 @@ int ParserContext::printProgram (std::ostream &stream)
 	{
 		Error::internalError ("empty parse tree, can't print");
 		return ER_FAILED;
+	}
+}
+
+IlBlock *ParserContext::generateIlCode ()
+{
+	if (root_node_ != nullptr)
+	{
+		IlBlock *block = new IlBlock ();
+		if (TreeWalker::codeGenerationWalk (getRoot(), block) != NO_ERROR)
+		{
+			Error::internalError ("code generation failed!");
+			delete block;
+			return nullptr;
+		}
+		else
+		{
+			return block;
+		}
+	}
+	else
+	{
+		Error::internalError ("empty parse tree, can't generate code");
+		return nullptr;
 	}
 }

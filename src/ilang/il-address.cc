@@ -24,29 +24,6 @@ ConstantIlAddress::ConstantIlAddress (std::string val) : IlAddress (BT_STRING)
 	sval_ = val;
 }
 
-ConstantIlAddress::ConstantIlAddress (ValueNode *val) : IlAddress (val->getType ())
-{
-	switch (getType ())
-	{
-	case BT_INT:
-		ival_ = ((IntegerValueNode *) val)->getValue ();
-		return;
-
-	case BT_FLOAT:
-		fval_ = ((FloatValueNode *) val)->getValue ();
-		return;
-
-	case BT_STRING:
-		sval_ = ((StringValueNode *) val)->getValue ();
-		return;
-
-	default:
-		assert (false);
-		Error::internalError ("unknown data type from ValueNode while creating ConstantIlAddress");
-		break;
-	}
-}
-
 std::string ConstantIlAddress::toString ()
 {
 	switch (getType ())

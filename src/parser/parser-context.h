@@ -6,6 +6,7 @@
 #include "parser.hh"
 #include "lexer.h"
 #include "nodes/parser-node.h"
+#include "ilang/il-block.h"
 
 using namespace yy;
 
@@ -39,6 +40,10 @@ public:
 
 	// Print the program (from AST)
 	int printProgram (std::ostream &stream);
+
+	// Generate intermediate language code for all AST
+	// Returns code block on success or nullptr on error
+	IlBlock *generateIlCode ();
 };
 
 #endif

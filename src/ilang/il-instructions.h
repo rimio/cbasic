@@ -48,6 +48,9 @@ private:
 	IlAddress *operand1_;
 	IlAddress *operand2_;
 	IlOperatorType operator_;
+
+	// Hidden constructor
+	AssignmentIlInstruction () { };
 public:
 	// Constructors & destructor
 	AssignmentIlInstruction (IlAddress *res, IlAddress *opr1) : result_ (res), operand1_ (opr1), operand2_ (nullptr), operator_ (ILOP_NONE) { };
@@ -63,6 +66,23 @@ public:
 	IlAddress *getOperand1 () const { return operand1_; }
 	IlAddress *getOperand2 () const { return operand2_; }
 	IlOperatorType getOperator () const { return operator_; }
+};
+
+//
+// Label instruction
+// I know, it's not really an instruction, but it's a good way to limit the kind of jumps
+// that can be generated from the parse tree.
+//
+class LabelIlInstruction : public IlInstruction
+{
+private:
+	std::string name_;
+	static int last_temp_index_;
+public:
+	LabelIlInstruction ();
+	LabelIlInstruction (std::string name) : name_ (name) { }
+
+	std::string toString ();
 };
 
 #endif

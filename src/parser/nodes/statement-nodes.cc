@@ -1,4 +1,6 @@
 #include "statement-nodes.h"
+#include "error/error.h"
+#include <cassert>
 
 AssignmentStatementNode::~AssignmentStatementNode ()
 {
@@ -6,6 +8,12 @@ AssignmentStatementNode::~AssignmentStatementNode ()
 		delete identifier_;
 	if (expression_ != nullptr)
 		delete expression_;
+}
+
+int AssignmentStatementNode::generateIlCode (IlBlock *block)
+{
+	// All ok
+	return NO_ERROR;
 }
 
 std::string AssignmentStatementNode::toString ()
@@ -33,6 +41,10 @@ AllocationStatementNode::~AllocationStatementNode ()
 		next = list->getNext ();
 		delete list;
 	}
+}
+
+int AllocationStatementNode::generateIlCode (IlBlock *block)
+{
 }
 
 std::string AllocationStatementNode::toString ()
@@ -74,6 +86,10 @@ WhileStatementNode::~WhileStatementNode ()
 	}
 }
 
+int WhileStatementNode::generateIlCode (IlBlock *block)
+{
+}
+
 std::string WhileStatementNode::toString ()
 {
 	return "while";
@@ -108,6 +124,11 @@ IfStatementNode::~IfStatementNode ()
 		next = list->getNext ();
 		delete list;
 	}
+}
+
+int IfStatementNode::generateIlCode (IlBlock *block)
+{
+
 }
 
 std::string IfStatementNode::toString ()

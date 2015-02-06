@@ -13,8 +13,9 @@ extern unsigned int verbose_flags;
 #define VERBOSE_FLAG_PRINT_AST					0x2
 #define VERBOSE_FLAG_PRINT_SYMBOLS				0x4
 #define VERBOSE_FLAG_PRINT_FINAL				0x8
+#define VERBOSE_FLAG_PRINT_GENERATED_IL			0x10
 
-#define VERBOSE_FLAG_MAX						0xF
+#define VERBOSE_FLAG_MAX						0x1F
 
 //
 // Verbose macros
@@ -23,5 +24,6 @@ extern unsigned int verbose_flags;
 #define VERBOSE_PRINT_AST						(verbose_flags & VERBOSE_FLAG_PRINT_AST)
 #define VERBOSE_PRINT_SYMBOLS					(verbose_flags & VERBOSE_FLAG_PRINT_SYMBOLS)
 #define VERBOSE_PRINT_FINAL						(verbose_flags & VERBOSE_FLAG_PRINT_FINAL)
+#define VERBOSE_PRINT_GENERATED_IL				(verbose_flags & VERBOSE_FLAG_PRINT_GENERATED_IL)
 
 #endif

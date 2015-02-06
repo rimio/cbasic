@@ -1,4 +1,5 @@
 #include "tree-walker.h"
+#include "error/error.h"
 
 ParserNode *TreeWalker::leafToRootWalk (ParserNode *node, struct TreeWalkContext *context, WALK_CALLBACK callback)
 {
@@ -87,4 +88,31 @@ ParserNode *TreeWalker::leafToRoot (ParserNode *root, WALK_CALLBACK callback, bo
 
 	// All ok
 	return new_root;
+}
+
+int TreeWalker::codeGenerationWalk (ParserNode *root, IlBlock *block)
+{
+	while (root != nullptr)
+	{
+		// Check valid node types
+		if (root->getNodeType () != PT_STATEMENT)
+		{
+			Error::internalError ("non-statement high level parser node was found during code generation");
+			return ER_FAILED;
+		}
+
+		// Generate code
+		int rc = root->generateIlCode (block);
+		if (rc != NO_ERROR)
+		{
+			// Error message should have been set
+			return rc;
+		}
+
+		// Advance
+		root = root->getNext ();
+	}
+
+	// All ok
+	return NO_ERROR;
 }

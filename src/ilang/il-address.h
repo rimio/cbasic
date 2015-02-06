@@ -4,7 +4,6 @@
 #include "symbols/basic-types.h"
 #include <string>
 #include "symbols/symbol-table.h"
-#include "parser/nodes/value-nodes.h"
 
 //
 // Address types
@@ -81,7 +80,6 @@ public:
 	ConstantIlAddress (int val);
 	ConstantIlAddress (float val);
 	ConstantIlAddress (std::string val);
-	ConstantIlAddress (ValueNode *val);
 
 	std::string toString ();
 	IlAddressType getAddressType () const { return ILA_CONSTANT; }
