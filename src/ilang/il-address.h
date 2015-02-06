@@ -53,7 +53,7 @@ protected:
 	VariableSymbol *var_;
 
 public:
-	VariableIlAddress (VariableSymbol sym) : IlAddress (BT_UNKNOWN), var_ (nullptr) { }		// We override getType ()
+	VariableIlAddress (VariableSymbol *sym) : IlAddress (BT_UNKNOWN), var_ (sym) { }		// We override getType ()
 
 	std::string toString ();
 	IlAddressType getAddressType () const { return ILA_VARIABLE; }

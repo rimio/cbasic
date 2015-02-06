@@ -1,5 +1,6 @@
 #include "statement-nodes.h"
 #include "error/error.h"
+#include "ilang/il-instructions.h"
 #include <cassert>
 
 AssignmentStatementNode::~AssignmentStatementNode ()
@@ -12,6 +13,30 @@ AssignmentStatementNode::~AssignmentStatementNode ()
 
 int AssignmentStatementNode::generateIlCode (IlBlock *block)
 {
+	// Generate code for expression
+	int rc = expression_->generateIlCode (block);
+	if (rc != NO_ERROR)
+	{
+		return rc;
+	}
+	assert (block->getLastResultAddress () != nullptr);
+
+	// Create address from identifier
+	Symbol *sym = identifier_->getSymbol ();
+	if (sym->getSymbolType() != SY_VARIABLE)
+	{
+		Error::internalError ("non-variable symbol found in left hand side of assignment");
+		return ER_FAILED;
+	}
+	VariableSymbol *vsym = (VariableSymbol *) sym;
+	VariableIlAddress *via = new VariableIlAddress (vsym);
+
+	// Create new assignment expression
+	AssignmentIlInstruction *asg = new AssignmentIlInstruction (via, block->getLastResultAddress ());
+
+	// Push it!
+	block->addInstruction (asg);
+
 	// All ok
 	return NO_ERROR;
 }
@@ -45,6 +70,8 @@ AllocationStatementNode::~AllocationStatementNode ()
 
 int AllocationStatementNode::generateIlCode (IlBlock *block)
 {
+	assert (false);
+	return NO_ERROR;
 }
 
 std::string AllocationStatementNode::toString ()
@@ -88,6 +115,8 @@ WhileStatementNode::~WhileStatementNode ()
 
 int WhileStatementNode::generateIlCode (IlBlock *block)
 {
+	assert (false);
+	return NO_ERROR;
 }
 
 std::string WhileStatementNode::toString ()
@@ -128,7 +157,8 @@ IfStatementNode::~IfStatementNode ()
 
 int IfStatementNode::generateIlCode (IlBlock *block)
 {
-
+	assert (false);
+	return NO_ERROR;
 }
 
 std::string IfStatementNode::toString ()

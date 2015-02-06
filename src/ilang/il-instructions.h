@@ -4,6 +4,15 @@
 #include "il-address.h"
 
 //
+// Intermediate language instruction types
+//
+enum IlInstructionType
+{
+	ILI_ASSIGNMENT,
+	ILI_LABEL
+};
+
+//
 // Intermediate language operators
 //
 enum IlOperatorType
@@ -32,6 +41,8 @@ public:
 	virtual ~IlInstruction () { };
 
 	virtual std::string toString () = 0;
+
+	virtual IlInstructionType getInstructionType () const = 0;
 };
 
 //
@@ -61,6 +72,8 @@ public:
 	// Instruction string representation
 	std::string toString ();
 
+	IlInstructionType getInstructionType () const { return ILI_ASSIGNMENT; }
+
 	// Getters
 	IlAddress *getResult () const { return result_; }
 	IlAddress *getOperand1 () const { return operand1_; }
@@ -83,6 +96,8 @@ public:
 	LabelIlInstruction (std::string name) : name_ (name) { }
 
 	std::string toString ();
+
+	IlInstructionType getInstructionType () const { return ILI_LABEL; }
 };
 
 #endif
