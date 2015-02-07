@@ -31,7 +31,6 @@ static struct option long_options[] =
 //
 static std::string *output_file = nullptr;
 static std::string *input_file = nullptr;
-static std::string *assembly_file = nullptr;
 static std::string *backend_target = nullptr;
 
 unsigned int verbose_flags = 0;
@@ -227,9 +226,6 @@ int main (int argc, char **argv)
 			return ER_FAILED;
 		}
 
-		// Set assembly code file
-		assembly_file = new std::string (*input_file + ".nasm");
-
 		// Default output file if one not provided
 		if (output_file == nullptr)
 		{
@@ -318,15 +314,12 @@ int main (int argc, char **argv)
 		return ER_FAILED;
 	}
 
-	std::ofstream output;
-	output.open (*assembly_file, std::ios::out);
-	if (backend->compile (program, output) != NO_ERROR)
+	// Compile
+	if (backend->compile (program, *output_file) != NO_ERROR)
 	{
 		// Error should have been printed
-		output.close ();
 		return ER_FAILED;
 	}
-	output.close ();
 
 	// All ok
 	return 0;

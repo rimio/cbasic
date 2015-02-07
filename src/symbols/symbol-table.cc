@@ -55,3 +55,10 @@ void SymbolTable::debugPrint ()
 		}
 	}
 }
+
+std::tuple< std::unordered_map<std::string, Symbol *>::iterator,
+			std::unordered_map<std::string, Symbol *>::iterator >
+SymbolTable::getIterator ()
+{
+	return std::make_tuple (table_.begin (), table_.end ());
+}

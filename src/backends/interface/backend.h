@@ -15,7 +15,7 @@ public:
 	virtual ~Backend () { }
 
 	// Compile an intermediate language program
-	virtual int compile (IlProgram *program, std::ofstream &file) = 0;
+	virtual int compile (IlProgram *program, std::string output_file) = 0;
 
 	// Get a backend instance for specified target
 	static Backend *getBackend (std::string target);

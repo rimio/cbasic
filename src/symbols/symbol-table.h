@@ -3,6 +3,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <tuple>
 #include "symbols/basic-types.h"
 
 //
@@ -78,6 +79,10 @@ public:
 	// Add and get a symbol from the table
 	static bool addSymbol (Symbol *sym);
 	static Symbol *getSymbol (std::string name);
+
+	// Get iteration essentials for table
+	static std::tuple< std::unordered_map<std::string, Symbol *>::iterator,
+					   std::unordered_map<std::string, Symbol *>::iterator > getIterator ();
 
 	// Print symbol tree
 	static void debugPrint ();
