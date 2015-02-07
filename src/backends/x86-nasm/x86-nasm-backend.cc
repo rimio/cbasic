@@ -55,7 +55,7 @@ int X86NasmBackend::compileSymbols (std::ofstream &file)
 			break;
 
 		default:
-			Error::internalError ("[x86-nasm] sug pula unknown symbol type");
+			Error::internalError ("[x86-nasm] unknown symbol type");
 			break;
 		}
 		file << std::endl;
@@ -113,7 +113,7 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 	int nasm_rc = system (nasm_command.c_str ());
 	if (nasm_rc != NO_ERROR)
 	{
-		Error::internalError ("[x86-nasm] nasm exited with error code " + std::to_string (nasm_rc));
+		Error::internalError ("[x86-nasm] nasm exited with error code "	+ std::to_string (nasm_rc));
 		return ER_FAILED;
 	}
 
