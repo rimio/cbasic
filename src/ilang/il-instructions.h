@@ -117,6 +117,7 @@ public:
 	LabelIlInstruction (std::string name) : name_ (name) { }
 
 	std::string toString ();
+	std::string getName () const { return name_; }
 
 	IlInstructionType getInstructionType () const { return ILI_LABEL; }
 };

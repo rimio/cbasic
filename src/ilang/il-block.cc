@@ -16,6 +16,11 @@ void IlBlock::addInstruction (IlInstruction *ins)
 	instructions_.push_back (ins);
 }
 
+IlBlockIterator IlBlock::getIterator ()
+{
+	return std::make_tuple (instructions_.begin(), instructions_.end ());
+}
+
 void IlBlock::debugPrint ()
 {
 	for (std::list<IlInstruction *>::iterator it = instructions_.begin ();

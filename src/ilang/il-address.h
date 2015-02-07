@@ -57,6 +57,7 @@ public:
 
 	std::string toString ();
 	IlAddressType getAddressType () const { return ILA_VARIABLE; }
+	VariableSymbol *getSymbol () const { return var_; }
 
 	// Override type getter
 	BasicType getType () const { return var_->getType (); }
@@ -83,6 +84,8 @@ public:
 
 	std::string toString ();
 	IlAddressType getAddressType () const { return ILA_CONSTANT; }
+	int getInt () const { return ival_; }
+	float getFloat () const { return fval_; }
 };
 
 //
