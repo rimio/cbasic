@@ -40,8 +40,16 @@ set (HEADER_FILES
 	${SOURCE_DIR}/error/error.h
 	${SOURCE_DIR}/parser/parser-context.h
 	${SOURCE_DIR}/parser/tree-walker.h
+
+	# backends
+	${SOURCE_DIR}/backends/interface/backend.h
+	${SOURCE_DIR}/backends/x86-nasm/x86-nasm-backend.h
+
+	# symbols
 	${SOURCE_DIR}/symbols/symbol-table.h
 	${SOURCE_DIR}/symbols/basic-types.h
+
+	# intermediate language
 	${SOURCE_DIR}/ilang/il-instructions.h
 	${SOURCE_DIR}/ilang/il-address.h
 	${SOURCE_DIR}/ilang/il-block.h
@@ -72,7 +80,15 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/error/error.cc
 	${SOURCE_DIR}/parser/parser-context.cc
 	${SOURCE_DIR}/parser/tree-walker.cc
+
+	# backends
+	${SOURCE_DIR}/backends/interface/backend.cc
+	${SOURCE_DIR}/backends/x86-nasm/x86-nasm-backend.cc
+
+	# symbols
 	${SOURCE_DIR}/symbols/symbol-table.cc
+
+	# intermediate language
 	${SOURCE_DIR}/ilang/il-instructions.cc
 	${SOURCE_DIR}/ilang/il-address.cc
 	${SOURCE_DIR}/ilang/il-block.cc

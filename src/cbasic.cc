@@ -9,6 +9,7 @@
 #include "parser/parser-context.h"
 #include "symbols/symbol-table.h"
 #include "ilang/il-program.h"
+#include "backends/interface/backend.h"
 
 //
 // getopt_long options
@@ -19,6 +20,7 @@ static struct option long_options[] =
 	{ "help",		no_argument,		NULL,		'h' },
 	{ "output",		required_argument,	NULL,		'o' },
 	{ "verbose",	required_argument,	NULL,		'V' },
+	{ "backend",	required_argument,	NULL,		'b' },
 
 	// End
 	{ NULL,			0,					NULL, 		0 }
@@ -30,6 +32,7 @@ static struct option long_options[] =
 static std::string *output_file = nullptr;
 static std::string *input_file = nullptr;
 static std::string *assembly_file = nullptr;
+static std::string *backend_target = nullptr;
 
 unsigned int verbose_flags = 0;
 
@@ -75,6 +78,8 @@ void print_usage ()
 	std::cout << "                            4 - print symbol tables after semantic analysis" << std::endl;
 	std::cout << "                            8 - print program after semantic analysis" << std::endl;
 	std::cout << "                           16 - print generated intermediate language program" << std::endl;
+	std::cout << "  -b, --backend=TARGET    specify output target from the following supported:" << std::endl;
+	std::cout << "                            x86 - 32bit x86 family" << std::endl;
 }
 
 //
@@ -86,7 +91,7 @@ int parse_args (int argc, char **argv)
 	{
 		// get option
 		int option_index = -1;
-		int c = getopt_long (argc, argv, "vho:V:", long_options, &option_index);
+		int c = getopt_long (argc, argv, "vho:V:b:", long_options, &option_index);
 		if (c == -1)
 		{
 			// Finished
@@ -123,6 +128,18 @@ int parse_args (int argc, char **argv)
 				else
 				{
 					Error::internalError ("verbose flags not provided");
+					return ER_FAILED;
+				}
+				break;
+
+			case 'b':
+				if (optarg != NULL)
+				{
+					backend_target = new std::string (optarg);
+				}
+				else
+				{
+					Error::internalError ("target backend not provided");
 					return ER_FAILED;
 				}
 				break;
@@ -218,6 +235,12 @@ int main (int argc, char **argv)
 		{
 			output_file = new std::string (*input_file + ".out");
 		}
+
+		// Default x86 backend if no one was provided
+		if (backend_target == nullptr)
+		{
+			backend_target = new std::string ("x86");
+		}
 	}
 
 	//
@@ -273,7 +296,7 @@ int main (int argc, char **argv)
 	IlProgram *program = pc->generateIlCode ();
 	if (program == nullptr)
 	{
-		// Error message should have been set
+		// Error should have been printed
 		return ER_FAILED;
 	}
 
@@ -284,6 +307,26 @@ int main (int argc, char **argv)
 		program->debugPrint ();
 		std::cout <<  "[VERBOSE END]" << std::endl << std::endl;
 	}
+
+	//
+	// EXECUTABLE CODE GENERATION
+	//
+	Backend *backend = Backend::getBackend (*backend_target);
+	if (backend == nullptr)
+	{
+		// Error should have been printed
+		return ER_FAILED;
+	}
+
+	std::ofstream output;
+	output.open (*assembly_file, std::ios::out);
+	if (backend->compile (program, output) != NO_ERROR)
+	{
+		// Error should have been printed
+		output.close ();
+		return ER_FAILED;
+	}
+	output.close ();
 
 	// All ok
 	return 0;
