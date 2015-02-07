@@ -18,17 +18,38 @@ enum IlInstructionType
 enum IlOperatorType
 {
 	ILOP_NONE = 0,
+
 	ILOP_ADD,
 	ILOP_SUB,
 	ILOP_MUL,
 	ILOP_DIV,
-	ILOP_MOD
+	ILOP_MOD,
+
+	ILOP_GT,
+	ILOP_LT,
+	ILOP_GE,
+	ILOP_LE,
+	ILOP_EQ,
+	ILOP_NE,
+
+	ILOP_NOT,
+	ILOP_AND,
+	ILOP_OR,
+	ILOP_XOR,
+
+	ILOP_CAST
 };
 
 //
 // IL operator aliases
 //
-static std::string IlOperatorAlias[] = { "none", "+", "-", "*", "/", "%" };
+static std::string IlOperatorAlias[] = {
+		"none",
+		"+", "-", "*", "/", "%",
+		"gt", "lt", "ge", "le", "eq", "ne",
+		"not", "and", "or", "xor"
+		"cast"
+};
 
 //
 // Base class for intermediate language instruction

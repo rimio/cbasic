@@ -14,11 +14,6 @@ IlBlock::~IlBlock ()
 void IlBlock::addInstruction (IlInstruction *ins)
 {
 	instructions_.push_back (ins);
-	if (ins->getInstructionType () == ILI_ASSIGNMENT)
-	{
-		AssignmentIlInstruction *asi = (AssignmentIlInstruction *) ins;
-		last_result_ = asi->getResult ();
-	}
 }
 
 void IlBlock::debugPrint ()

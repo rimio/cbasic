@@ -54,7 +54,7 @@ public:
 
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_ASSIGNMENT; }
-	int generateIlCode (IlBlock *block);
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 
 	// Implementations of ParserNode pure virtual functions
 	std::string toString ();
@@ -87,7 +87,7 @@ public:
 
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_ALLOCATION; }
-	int generateIlCode (IlBlock *block);
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 
 	// Implementations of ParserNode pure virtual functions
 	std::string toString ();
@@ -118,7 +118,7 @@ public:
 	ExpressionNode *getCondition () const { return condition_; }
 	ParserNode *getStatements () const { return statements_; }
 
-	int generateIlCode (IlBlock *block);
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_WHILE; }
@@ -156,7 +156,7 @@ public:
 
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_IF; }
-	int generateIlCode (IlBlock *block);
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 
 	// Implementations of ParserNode pure virtual functions
 	std::string toString ();

@@ -45,6 +45,7 @@ set (HEADER_FILES
 	${SOURCE_DIR}/ilang/il-instructions.h
 	${SOURCE_DIR}/ilang/il-address.h
 	${SOURCE_DIR}/ilang/il-block.h
+	${SOURCE_DIR}/ilang/il-program.h
 
 	# parser operations
 	${SOURCE_DIR}/parser/operations/constant-folding.h
@@ -75,6 +76,7 @@ set (SOURCE_FILES
 	${SOURCE_DIR}/ilang/il-instructions.cc
 	${SOURCE_DIR}/ilang/il-address.cc
 	${SOURCE_DIR}/ilang/il-block.cc
+	${SOURCE_DIR}/ilang/il-program.cc
 
 	# parser operations
 	${SOURCE_DIR}/parser/operations/constant-folding.cc

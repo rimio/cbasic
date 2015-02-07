@@ -46,6 +46,7 @@ public:
 	std::string getValue ();
 
 	std::string toString ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	BasicType getType () const { return BT_STRING; }
 };
 
@@ -62,6 +63,7 @@ public:
 	int getValue () const { return value_; }
 
 	std::string toString ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	BasicType getType () const { return BT_INT; }
 };
 
@@ -78,6 +80,7 @@ public:
 	float getValue () const { return value_; }
 
 	std::string toString ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	BasicType getType () const { return BT_FLOAT; }
 };
 

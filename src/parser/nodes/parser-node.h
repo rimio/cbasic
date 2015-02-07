@@ -3,9 +3,11 @@
 
 #include <string>
 #include <list>
+#include <tuple>
 #include "symbols/basic-types.h"
 #include "parser/location.hh"
 #include "ilang/il-block.h"
+#include "ilang/il-address.h"
 
 //
 // Parser node types
@@ -70,7 +72,8 @@ public:
 	virtual std::list<ParserNode **> getChildrenReferences () = 0;
 
 	// Generate intermediate language code
-	virtual int generateIlCode (IlBlock *block) { return 0; }
+	// Return tuple: <err_code, result_address>
+	virtual std::tuple<int, IlAddress *> generateIlCode (IlBlock *block) { return std::make_tuple(0, nullptr); };
 };
 
 #endif

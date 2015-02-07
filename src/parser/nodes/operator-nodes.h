@@ -4,6 +4,7 @@
 #include "parser-node.h"
 #include "expression-node.h"
 #include "error/error.h"
+#include <tuple>
 
 //
 // Operator enumeration
@@ -50,6 +51,9 @@ protected:
 
 	// Return type
 	BasicType return_type_;
+
+	// Generate code for left/right and return addresses
+	std::tuple<int, IlAddress *, IlAddress *> generateLeftRight (IlBlock *block);
 
 public:
 	virtual ~OperatorNode ();
@@ -138,6 +142,7 @@ public:
 
 	std::string toString ();
 	int inferType ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	OperatorType getOperatorType () const { return OT_PLUS; }
 };
 
@@ -151,6 +156,7 @@ public:
 	MinusOperatorNode (ExpressionNode *l, ExpressionNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	OperatorType getOperatorType () const { return OT_MINUS; }
 };
 
@@ -163,6 +169,7 @@ public:
 	MultiplicationOperatorNode (ExpressionNode *l, ExpressionNode *r) : ArithmeticOperatorNode (l, r) { };
 
 	std::string toString ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	OperatorType getOperatorType () const { return OT_MULTIPLICATION; }
 };
 
@@ -176,6 +183,7 @@ public:
 
 	std::string toString ();
 	int inferType ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	OperatorType getOperatorType () const { return OT_DIVISION; }
 };
 

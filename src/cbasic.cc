@@ -8,6 +8,7 @@
 #include "verbose.h"
 #include "parser/parser-context.h"
 #include "symbols/symbol-table.h"
+#include "ilang/il-program.h"
 
 //
 // getopt_long options
@@ -269,7 +270,7 @@ int main (int argc, char **argv)
 	//
 	// INTERMEDIATE CODE GENERATION
 	//
-	IlBlock *program = pc->generateIlCode ();
+	IlProgram *program = pc->generateIlCode ();
 	if (program == nullptr)
 	{
 		// Error message should have been set

@@ -102,11 +102,11 @@ int TreeWalker::codeGenerationWalk (ParserNode *root, IlBlock *block)
 		}
 
 		// Generate code
-		int rc = root->generateIlCode (block);
-		if (rc != NO_ERROR)
+		std::tuple<int, IlAddress *> ret = root->generateIlCode (block);
+		if (std::get<0>(ret) != NO_ERROR)
 		{
 			// Error message should have been set
-			return rc;
+			return std::get<0>(ret);
 		}
 
 		// Advance

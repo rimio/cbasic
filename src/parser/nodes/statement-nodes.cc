@@ -11,34 +11,33 @@ AssignmentStatementNode::~AssignmentStatementNode ()
 		delete expression_;
 }
 
-int AssignmentStatementNode::generateIlCode (IlBlock *block)
+std::tuple<int, IlAddress *> AssignmentStatementNode::generateIlCode (IlBlock *block)
 {
 	// Generate code for expression
-	int rc = expression_->generateIlCode (block);
-	if (rc != NO_ERROR)
+	std::tuple<int, IlAddress *> ret = expression_->generateIlCode (block);
+	if (std::get<0>(ret) != NO_ERROR)
 	{
-		return rc;
+		return std::make_tuple(ER_FAILED, nullptr);
 	}
-	assert (block->getLastResultAddress () != nullptr);
+	assert (std::get<1>(ret) != nullptr);
 
 	// Create address from identifier
-	Symbol *sym = identifier_->getSymbol ();
-	if (sym->getSymbolType() != SY_VARIABLE)
+	std::tuple<int, IlAddress *> iret = identifier_->generateIlCode (block);
+	if (std::get<0>(iret) != NO_ERROR)
 	{
-		Error::internalError ("non-variable symbol found in left hand side of assignment");
-		return ER_FAILED;
+		return std::make_tuple(ER_FAILED, nullptr);
 	}
-	VariableSymbol *vsym = (VariableSymbol *) sym;
-	VariableIlAddress *via = new VariableIlAddress (vsym);
+	assert (std::get<1>(iret) != nullptr);
 
 	// Create new assignment expression
-	AssignmentIlInstruction *asg = new AssignmentIlInstruction (via, block->getLastResultAddress ());
+	AssignmentIlInstruction *asg = new AssignmentIlInstruction (std::get<1>(iret), std::get<1>(ret));
 
 	// Push it!
 	block->addInstruction (asg);
 
 	// All ok
-	return NO_ERROR;
+	// Do NOT return result address, this is a statement!
+	return std::make_tuple(NO_ERROR, nullptr);
 }
 
 std::string AssignmentStatementNode::toString ()
@@ -68,10 +67,10 @@ AllocationStatementNode::~AllocationStatementNode ()
 	}
 }
 
-int AllocationStatementNode::generateIlCode (IlBlock *block)
+std::tuple<int, IlAddress *> AllocationStatementNode::generateIlCode (IlBlock *block)
 {
 	assert (false);
-	return NO_ERROR;
+	return std::make_tuple(ER_FAILED, nullptr);
 }
 
 std::string AllocationStatementNode::toString ()
@@ -113,10 +112,10 @@ WhileStatementNode::~WhileStatementNode ()
 	}
 }
 
-int WhileStatementNode::generateIlCode (IlBlock *block)
+std::tuple<int, IlAddress *> WhileStatementNode::generateIlCode (IlBlock *block)
 {
 	assert (false);
-	return NO_ERROR;
+	return std::make_tuple(ER_FAILED, nullptr);
 }
 
 std::string WhileStatementNode::toString ()
@@ -155,10 +154,10 @@ IfStatementNode::~IfStatementNode ()
 	}
 }
 
-int IfStatementNode::generateIlCode (IlBlock *block)
+std::tuple<int, IlAddress *> IfStatementNode::generateIlCode (IlBlock *block)
 {
 	assert (false);
-	return NO_ERROR;
+	return std::make_tuple(ER_FAILED, nullptr);
 }
 
 std::string IfStatementNode::toString ()

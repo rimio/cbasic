@@ -144,11 +144,12 @@ int ParserContext::printProgram (std::ostream &stream)
 	}
 }
 
-IlBlock *ParserContext::generateIlCode ()
+IlProgram *ParserContext::generateIlCode ()
 {
 	if (root_node_ != nullptr)
 	{
-		IlBlock *block = new IlBlock ();
+		IlProgram *program = new IlProgram ();
+		IlBlock *block = program->getMainBlock ();
 		if (TreeWalker::codeGenerationWalk (getRoot(), block) != NO_ERROR)
 		{
 			Error::internalError ("code generation failed!");
@@ -157,7 +158,7 @@ IlBlock *ParserContext::generateIlCode ()
 		}
 		else
 		{
-			return block;
+			return program;
 		}
 	}
 	else

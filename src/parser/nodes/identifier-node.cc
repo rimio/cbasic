@@ -31,3 +31,9 @@ void IdentifierNode::setType (BasicType type)
 	assert (false);
 	Error::internalError ("attempting to set type of IdentifierNode");
 }
+
+std::tuple<int, IlAddress *> IdentifierNode::generateIlCode (IlBlock *block)
+{
+	VariableSymbol *vsym = (VariableSymbol *) symbol_;
+	return std::make_tuple (NO_ERROR, new VariableIlAddress (vsym));
+}

@@ -43,6 +43,8 @@ public:
 	// Nothing to infer on values
 	int inferType () { return NO_ERROR; };
 
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
+
 	// This is an identifier
 	ParserNodeType getNodeType () const { return PT_IDENTIFIER; }
 

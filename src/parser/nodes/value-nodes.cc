@@ -28,12 +28,27 @@ std::string StringValueNode::toString ()
 	return "\"" + value_ + "\"";
 }
 
+std::tuple<int, IlAddress *> StringValueNode::generateIlCode (IlBlock *block)
+{
+	return std::make_tuple (NO_ERROR, new ConstantIlAddress (value_));
+}
+
 std::string IntegerValueNode::toString()
 {
 	return std::to_string (value_);
 }
 
+std::tuple<int, IlAddress *> IntegerValueNode::generateIlCode (IlBlock *block)
+{
+	return std::make_tuple (NO_ERROR, new ConstantIlAddress (value_));
+}
+
 std::string FloatValueNode::toString ()
 {
 	return std::to_string (value_);
+}
+
+std::tuple<int, IlAddress *> FloatValueNode::generateIlCode (IlBlock *block)
+{
+	return std::make_tuple (NO_ERROR, new ConstantIlAddress (value_));
 }

@@ -21,6 +21,49 @@ std::string OperatorNode::print (std::string indent)
 	}
 }
 
+std::tuple<int, IlAddress *, IlAddress *> OperatorNode::generateLeftRight (IlBlock *block)
+{
+	IlAddress *aleft = nullptr, *aright = nullptr;
+
+	// Get left
+	std::tuple<int, IlAddress *> rleft = left_->generateIlCode (block);
+	if (std::get<0>(rleft) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr, nullptr);
+	}
+	if (std::get<1>(rleft) == nullptr)
+	{
+		Error::internalError ("code generation for left side of operator yielded null");
+		return std::make_tuple (ER_FAILED, nullptr, nullptr);
+	}
+	else
+	{
+		aleft = std::get<1>(rleft);
+	}
+
+	// Get right
+	if (right_ != nullptr)
+	{
+		std::tuple<int, IlAddress *> rright = right_->generateIlCode (block);
+		if (std::get<0>(rright) != NO_ERROR)
+		{
+			return std::make_tuple (ER_FAILED, nullptr, nullptr);
+		}
+		if (std::get<1>(rright) == nullptr)
+		{
+			Error::internalError ("code generation for right side of operator yielded null");
+			return std::make_tuple (ER_FAILED, nullptr, nullptr);
+		}
+		else
+		{
+			aright = std::get<1>(rright);
+		}
+	}
+
+	// Return
+	return std::make_tuple (NO_ERROR, aleft, aright);
+}
+
 int ArithmeticOperatorNode::inferType ()
 {
 	// Disallow operation on string types
@@ -180,9 +223,51 @@ int PlusOperatorNode::inferType ()
 	}
 }
 
+std::tuple<int, IlAddress *> PlusOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai = nullptr;
+	if (std::get<2>(ret) == nullptr)
+	{
+		ai = new AssignmentIlInstruction (ra, std::get<1>(ret), ILOP_ADD);
+	}
+	else
+	{
+		ai = new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_ADD);
+	}
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
+}
+
 std::string MinusOperatorNode::toString ()
 {
 	return std::string ("-");
+}
+
+std::tuple<int, IlAddress *> MinusOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+	assert (std::get<2>(ret) != nullptr);
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_SUB);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
 }
 
 std::string MultiplicationOperatorNode::toString ()
@@ -190,9 +275,45 @@ std::string MultiplicationOperatorNode::toString ()
 	return std::string ("*");
 }
 
+std::tuple<int, IlAddress *> MultiplicationOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+	assert (std::get<2>(ret) != nullptr);
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_MUL);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
+}
+
 std::string DivisionOperatorNode::toString ()
 {
 	return std::string ("/");
+}
+
+std::tuple<int, IlAddress *> DivisionOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+	assert (std::get<2>(ret) != nullptr);
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_DIV);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
 }
 
 int DivisionOperatorNode::inferType ()
