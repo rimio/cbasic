@@ -41,7 +41,7 @@ enum IlOperatorType
 };
 
 #define IL_MAINTAIN_OPERAND_ORDER(op) \
-	((op) == ILOP_SUB || (op) == ILOP_DIV || (op) == ILOP_MOD)
+	((op) != ILOP_ADD && (op) != ILOP_MUL && (op) != ILOP_AND && (op) != ILOP_OR && (op) != ILOP_XOR)
 
 //
 // IL operator aliases

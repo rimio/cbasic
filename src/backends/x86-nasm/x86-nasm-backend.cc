@@ -374,6 +374,7 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			}
 		}
 		assert (i_dest_addr != nullptr);
+		assert (i_dest_addr->getAddressType () == ADDR_REGISTER);
 		assert (i_opr_addr != nullptr);
 
 		// Add arithmetic instruction
@@ -392,7 +393,69 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			break;
 
 		case ILOP_DIV:
-			inst = new AddNasmInstruction (i_dest_addr, i_opr_addr);
+			{
+				//
+				// IMUL is defined as EAX = EDX:EAX / operand
+				//
+
+				// Prepare EAX
+				RegisterNasmAddress *dest_reg = (RegisterNasmAddress *) i_dest_addr;
+				if (dest_reg->getRegister () != REG_EAX)
+				{
+					MovNasmInstruction *mov;
+
+					// Check operand
+					if (i_opr_addr->getAddressType () == ADDR_REGISTER)
+					{
+						RegisterNasmAddress *reg_opr = (RegisterNasmAddress *) i_opr_addr;
+						if (reg_opr->getRegister () == REG_EAX)
+						{
+							NasmRegister auxr =
+								(dest_reg->getRegister () == REG_EBX ? REG_ECX : REG_EBX);
+
+							// Move operand to auxiliary register
+							mov = new MovNasmInstruction (
+										new RegisterNasmAddress (auxr),
+										i_opr_addr
+									);
+							ilist.push_back (mov);
+							i_opr_addr = new RegisterNasmAddress (auxr);
+						}
+					}
+
+					// Move to EAX
+					mov = new MovNasmInstruction (
+								new RegisterNasmAddress (REG_EAX),
+								i_dest_addr
+							);
+					ilist.push_back (mov);
+					i_dest_addr = new RegisterNasmAddress (REG_EAX);
+				}
+
+				// Move operand if it's in EDX
+				if ((i_opr_addr->getAddressType () == ADDR_IMMEDIATE)
+					|| (i_opr_addr->getAddressType () == ADDR_REGISTER
+						&& ((RegisterNasmAddress *)i_opr_addr)->getRegister () == REG_EDX))
+					{
+						// Move operand to EBX
+						MovNasmInstruction *mov = new MovNasmInstruction (
+									new RegisterNasmAddress (REG_EBX),
+									i_opr_addr
+								);
+						ilist.push_back (mov);
+						i_opr_addr = new RegisterNasmAddress (REG_EBX);
+					}
+
+				// Clear EDX
+				MovNasmInstruction *mov = new MovNasmInstruction (
+							new RegisterNasmAddress (REG_EDX),
+							new ImmediateNasmAddress ((unsigned int) 0)
+						);
+				ilist.push_back (mov);
+
+				// Do operation
+				inst = new IdivNasmInstruction (i_opr_addr);
+			}
 			break;
 
 		default:

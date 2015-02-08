@@ -197,6 +197,8 @@ enum NasmInstructionType
 
 	NI_ADD,
 	NI_SUB,
+	NI_IMUL,
+	NI_IDIV,
 
 	NI_PUSH,
 	NI_POP
@@ -234,7 +236,7 @@ private:
 public:
 	IntNasmInstruction (unsigned int interrupt) : interrupt_ (interrupt) { }
 
-	std::string toString () { return "int " + std::to_string (interrupt_); }
+	std::string toString () { return "int  " + std::to_string (interrupt_); }
 	NasmInstructionType getInstructionType () const { return NI_INT; }
 };
 
@@ -249,7 +251,7 @@ public:
 	MovNasmInstruction (NasmAddress *dest, NasmAddress *src) : dest_ (dest), src_ (src) { };
 	~MovNasmInstruction () { delete dest_; delete src_; }
 
-	std::string toString () { return "mov " + dest_->toString () + ", " + src_->toString (); }
+	std::string toString () { return "mov  " + dest_->toString () + ", " + src_->toString (); }
 	NasmInstructionType getInstructionType () const { return NI_MOV; }
 };
 
@@ -265,7 +267,7 @@ public:
 	AddNasmInstruction (NasmAddress *dest, NasmAddress *opr) : dest_ (dest), opr_ (opr) { };
 	~AddNasmInstruction () { delete dest_; delete opr_; }
 
-	std::string toString () { return "add " + dest_->toString () + ", " + opr_->toString (); }
+	std::string toString () { return "add  " + dest_->toString () + ", " + opr_->toString (); }
 	NasmInstructionType getInstructionType () const { return NI_ADD; }
 };
 
@@ -281,8 +283,39 @@ public:
 	SubNasmInstruction (NasmAddress *dest, NasmAddress *opr) : dest_ (dest), opr_ (opr) { };
 	~SubNasmInstruction () { delete dest_; delete opr_; }
 
-	std::string toString () { return "sub " + dest_->toString () + ", " + opr_->toString (); }
+	std::string toString () { return "sub  " + dest_->toString () + ", " + opr_->toString (); }
 	NasmInstructionType getInstructionType () const { return NI_SUB; }
+};
+
+class ImulNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *dest_;
+	NasmAddress *opr_;
+	// Hidden constructor
+	ImulNasmInstruction () { };
+
+public:
+	ImulNasmInstruction (NasmAddress *dest, NasmAddress *opr) : dest_ (dest), opr_ (opr) { };
+	~ImulNasmInstruction () { delete dest_; delete opr_; }
+
+	std::string toString () { return "imul " + dest_->toString () + ", " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_IMUL; }
+};
+
+class IdivNasmInstruction : public NasmInstruction
+{	// EAX = EDX:EAX / opr_
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	IdivNasmInstruction () { };
+
+public:
+	IdivNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~IdivNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "idiv dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_IDIV; }
 };
 
 class PushNasmInstruction : public NasmInstruction
@@ -310,7 +343,7 @@ public:
 	PopNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
 	~PopNasmInstruction () { if (opr_ != nullptr) delete opr_; }
 
-	std::string toString () { return "pop " + (opr_ != nullptr ? opr_->toString () : ""); }
+	std::string toString () { return "pop  " + (opr_ != nullptr ? opr_->toString () : ""); }
 	NasmInstructionType getInstructionType () const { return NI_POP; }
 };
 
