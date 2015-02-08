@@ -236,7 +236,7 @@ std::tuple<int, IlAddress *> PlusOperatorNode::generateIlCode (IlBlock *block)
 	AssignmentIlInstruction *ai = nullptr;
 	if (std::get<2>(ret) == nullptr)
 	{
-		ai = new AssignmentIlInstruction (ra, std::get<1>(ret), ILOP_ADD);
+		ai = new AssignmentIlInstruction (ra, std::get<1>(ret), ILOP_NONE);
 	}
 	else
 	{
@@ -260,11 +260,29 @@ std::tuple<int, IlAddress *> MinusOperatorNode::generateIlCode (IlBlock *block)
 		return std::make_tuple (ER_FAILED, nullptr);
 	}
 	assert (std::get<1>(ret) != nullptr);
-	assert (std::get<2>(ret) != nullptr);
 
 	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
-	AssignmentIlInstruction *ai =
-		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_SUB);
+	AssignmentIlInstruction *ai = nullptr;
+	if (std::get<2>(ret) == nullptr)
+	{
+		if (getType () == BT_INT)
+		{
+			ai = new AssignmentIlInstruction (ra, new ConstantIlAddress ((int) 0), std::get<1>(ret), ILOP_SUB);
+		}
+		else if (getType () == BT_FLOAT)
+		{
+			ai = new AssignmentIlInstruction (ra, new ConstantIlAddress ((float) 0.0f), std::get<1>(ret), ILOP_SUB);
+		}
+		else
+		{
+			// Shouldn't happen
+			assert (false);
+		}
+	}
+	else
+	{
+		ai = new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_SUB);
+	}
 	block->addInstruction (ai);
 
 	return std::make_tuple (NO_ERROR, ra);
@@ -350,6 +368,24 @@ int DivisionOperatorNode::inferType ()
 
 	// Done
 	return rc;
+}
+
+std::tuple<int, IlAddress *> IntDivisionOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+	assert (std::get<2>(ret) != nullptr);
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_DIV);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
 }
 
 std::string IntDivisionOperatorNode::toString ()

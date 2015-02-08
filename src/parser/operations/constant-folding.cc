@@ -112,7 +112,8 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 	{
 		OperatorNode *op = (OperatorNode *) node;
 
-		if (op->getRight () == nullptr)
+		if ((op->getLeft ()->getNodeType () == PT_VALUE)
+			&& (op->getRight () == nullptr))
 		{
 			// Get type
 			ValueNode *val = (ValueNode *) op->getLeft ();

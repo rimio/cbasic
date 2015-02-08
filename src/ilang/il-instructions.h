@@ -40,6 +40,9 @@ enum IlOperatorType
 	ILOP_CAST
 };
 
+#define IL_MAINTAIN_OPERAND_ORDER(op) \
+	((op) == ILOP_SUB || (op) == ILOP_DIV || (op) == ILOP_MOD)
+
 //
 // IL operator aliases
 //

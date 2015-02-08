@@ -107,6 +107,8 @@ public:
 
 	std::string toString ();
 	IlAddressType getAddressType () const { return ILA_TEMPORARY; }
+
+	std::string getName () const { return name_; }
 };
 
 #endif

@@ -55,6 +55,24 @@ public:
 typedef std::unordered_map<std::string, NasmBssDefinition *> NasmBssMap;
 
 //
+// Stack variable definition
+//
+class NasmStackDefinition;
+
+typedef std::unordered_map<std::string, NasmStackDefinition> NasmStackMap;
+
+class NasmStackDefinition
+{
+public:
+	unsigned int size_;
+	unsigned int offset_;
+
+	NasmStackDefinition (unsigned int size, unsigned int offs) : size_ (size), offset_ (offs) { }
+
+	static unsigned int getStackSize (NasmStackMap &map);
+};
+
+//
 // Registers
 //
 enum NasmRegister
@@ -95,8 +113,11 @@ public:
 	// Type
 	virtual NasmAddressType getAddressType () const = 0;
 
+	// Is memory location?
+	virtual bool isMemory () const = 0;
+
 	// Translate an IL address to a NASM address
-	static NasmAddress *fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssMap &bss, unsigned int &stack_offset);
+	static NasmAddress *fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssMap &bss, NasmStackMap &stack);
 };
 
 class ImmediateNasmAddress : public NasmAddress
@@ -111,8 +132,9 @@ public:
 	ImmediateNasmAddress (int data);
 	ImmediateNasmAddress (float data);
 
-	std::string toString () { return std::to_string (data_); }
+	std::string toString () { return "dword " + std::to_string (data_); }
 	NasmAddressType getAddressType () const { return ADDR_IMMEDIATE; }
+	bool isMemory () const { return false; }
 
 	unsigned int getData () { return data_; }
 };
@@ -128,6 +150,9 @@ public:
 
 	std::string toString () { return NasmRegisterAlias[reg_]; }
 	NasmAddressType getAddressType () const { return ADDR_REGISTER; }
+	bool isMemory () const { return false; }
+
+	NasmRegister getRegister () const { return reg_; }
 };
 
 class MemoryDirectNasmAddress : public NasmAddress
@@ -142,6 +167,7 @@ public:
 
 	std::string toString () { return "[" + label_ + "]"; }
 	NasmAddressType getAddressType () const { return ADDR_MEMORY_DIRECT; }
+	bool isMemory () const { return true; }
 };
 
 class MemoryBasedNasmAddress : public NasmAddress
@@ -156,8 +182,9 @@ private:
 public:
 	MemoryBasedNasmAddress (NasmRegister reg, unsigned int offset) : reg_ (reg), offset_ (offset) { }
 
-	std::string toString () { return "[" + NasmRegisterAlias[reg_] + (offset_ > 0 ? "+" : "") + std::to_string (offset_); }
+	std::string toString () { return "[" + NasmRegisterAlias[reg_] + (offset_ > 0 ? "+" : "") + std::to_string (offset_) + "]"; }
 	NasmAddressType getAddressType () const { return ADDR_MEMORY_BASED; }
+	bool isMemory () const { return true; }
 };
 
 //
