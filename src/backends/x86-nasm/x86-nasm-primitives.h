@@ -83,10 +83,13 @@ enum NasmRegister
 	REG_EDX,
 
 	REG_ESP,
-	REG_EBP
+	REG_EBP,
+
+	REG_ST0,		// x87 floating point registers
+	REG_ST1
 };
 
-static std::string NasmRegisterAlias[] = { "eax", "ebx", "ecx", "edx", "esp", "ebp" };
+static std::string NasmRegisterAlias[] = { "eax", "ebx", "ecx", "edx", "esp", "ebp", "st0", "st1" };
 
 //
 // Data locations
@@ -132,7 +135,7 @@ public:
 	ImmediateNasmAddress (int data);
 	ImmediateNasmAddress (float data);
 
-	std::string toString () { return "dword " + std::to_string (data_); }
+	std::string toString ();
 	NasmAddressType getAddressType () const { return ADDR_IMMEDIATE; }
 	bool isMemory () const { return false; }
 
@@ -182,7 +185,7 @@ private:
 public:
 	MemoryBasedNasmAddress (NasmRegister reg, unsigned int offset) : reg_ (reg), offset_ (offset) { }
 
-	std::string toString () { return "[" + NasmRegisterAlias[reg_] + (offset_ > 0 ? "+" : "") + std::to_string (offset_) + "]"; }
+	std::string toString () { return "[" + NasmRegisterAlias[reg_] + (offset_ >= 0 ? "+" : "") + std::to_string (offset_) + "]"; }
 	NasmAddressType getAddressType () const { return ADDR_MEMORY_BASED; }
 	bool isMemory () const { return true; }
 };
@@ -199,6 +202,14 @@ enum NasmInstructionType
 	NI_SUB,
 	NI_IMUL,
 	NI_IDIV,
+
+	NI_FADD,
+	NI_FSUB,
+	NI_FMUL,
+	NI_FDIV,
+
+	NI_FLD,
+	NI_FSTP,
 
 	NI_PUSH,
 	NI_POP
@@ -318,6 +329,96 @@ public:
 	NasmInstructionType getInstructionType () const { return NI_IDIV; }
 };
 
+class FaddNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	FaddNasmInstruction () { };
+
+public:
+	FaddNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~FaddNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "fadd dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FADD; }
+};
+
+class FsubNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	FsubNasmInstruction () { };
+
+public:
+	FsubNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~FsubNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "fsub dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FSUB; }
+};
+
+class FmulNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	FmulNasmInstruction () { };
+
+public:
+	FmulNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~FmulNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "fmul dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FMUL; }
+};
+
+class FdivNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	FdivNasmInstruction () { };
+
+public:
+	FdivNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~FdivNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "fdiv dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FDIV; }
+};
+
+class FldNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	FldNasmInstruction () { };
+
+public:
+	FldNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~FldNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "fld  dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FLD; }
+};
+
+class FstpNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	FstpNasmInstruction () { };
+
+public:
+	FstpNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~FstpNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "fstp dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FSTP; }
+};
+
 class PushNasmInstruction : public NasmInstruction
 {
 private:
@@ -339,7 +440,6 @@ private:
 	NasmAddress *opr_;
 
 public:
-	PopNasmInstruction () : opr_ (nullptr) { };
 	PopNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
 	~PopNasmInstruction () { if (opr_ != nullptr) delete opr_; }
 

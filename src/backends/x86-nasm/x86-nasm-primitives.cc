@@ -180,3 +180,11 @@ ImmediateNasmAddress::ImmediateNasmAddress (int data)
 	unsigned int *addr = (unsigned int *)&data;
 	data_ = *addr;
 }
+
+std::string ImmediateNasmAddress::toString ()
+{
+	std::stringstream hx;
+	hx << std::hex << data_;
+
+	return "dword 0x" + hx.str ();
+}

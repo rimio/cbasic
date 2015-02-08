@@ -153,8 +153,116 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 
 	if (r_iladdr->getType () == BT_FLOAT)
 	{
-		// TODO: float arithmetic, special case
-		assert (false);
+		bool push_op1 = false;
+		bool push_op2 = false;
+
+		// Keep operator addresses here
+		NasmAddress *i_op1_addr = op1_addr;
+		NasmAddress *i_op2_addr = op2_addr;
+
+		//
+		// Prepare context
+		//
+
+		// Bring op1 to memory
+		if (!i_op1_addr->isMemory ())
+		{
+			// Push op1 on stack
+			PushNasmInstruction *push = new PushNasmInstruction (i_op1_addr);
+			ilist.push_back (push);
+
+			// New address
+			i_op1_addr = new MemoryBasedNasmAddress (REG_ESP, 0);
+			push_op1 = true;
+		}
+
+		// ST0 = op1
+		FldNasmInstruction *fld = new FldNasmInstruction (i_op1_addr);
+		ilist.push_back (fld);
+
+		// Bring op2 to memory
+		if (!i_op2_addr->isMemory ())
+		{
+			// Push op1 on stack
+			PushNasmInstruction *push = new PushNasmInstruction (i_op2_addr);
+			ilist.push_back (push);
+
+			// New address
+			i_op2_addr = new MemoryBasedNasmAddress (REG_ESP, 0);
+			push_op2 = true;
+		}
+
+		//
+		// Execute operation
+		//
+		NasmInstruction *inst = nullptr;
+		switch (op_type)
+		{
+		case ILOP_ADD:
+			inst = new FaddNasmInstruction (i_op2_addr);
+			break;
+
+		case ILOP_SUB:
+			inst = new FsubNasmInstruction (i_op2_addr);
+			break;
+
+		case ILOP_MUL:
+			inst = new FmulNasmInstruction (i_op2_addr);
+			break;
+
+		case ILOP_DIV:
+			inst = new FdivNasmInstruction (i_op2_addr);
+			break;
+
+		default:
+			Error::internalError ("invalid '" + IlOperatorAlias[op_type] + "' operator for floating point context");
+			return ER_FAILED;
+		}
+
+		inst->setComment (instruction->toString ());
+		ilist.push_back (inst);
+
+		//
+		// Get result
+		//
+		if (r_addr->isMemory ())
+		{
+			// ST0 -> mem, pop ST0
+			FstpNasmInstruction *fstp = new FstpNasmInstruction (r_addr);
+			ilist.push_back (fstp);
+		}
+		else
+		{
+			// SUB  ESP, 4
+			// FSPT [ESP]
+			// POP  r
+			SubNasmInstruction *sub = new SubNasmInstruction (
+						new RegisterNasmAddress (REG_ESP),
+						new ImmediateNasmAddress ((unsigned int) 4)
+					);
+			ilist.push_back (sub);
+
+			FstpNasmInstruction *fstp = new FstpNasmInstruction (new MemoryBasedNasmAddress (REG_ESP, 0));
+			ilist.push_back (fstp);
+
+			PopNasmInstruction *pop = new PopNasmInstruction (r_addr);
+			ilist.push_back (pop);
+		}
+
+		//
+		// Pop operands
+		//
+		if (push_op1 || push_op2)
+		{
+			unsigned int amount = (push_op1 ? 4 : 0) + (push_op2 ? 4 : 0);
+
+			AddNasmInstruction *add = new AddNasmInstruction (
+						new RegisterNasmAddress (REG_ESP),
+						new ImmediateNasmAddress (amount)
+					);
+			ilist.push_back (add);
+		}
+
 		return NO_ERROR;
 	}
 
@@ -566,7 +674,7 @@ void X86NasmBackend::printInstructionList (NasmInstructionList &ilist, std::ofst
 			}
 
 			// We have a comment, print it
-			text += "; " + (*it)->getComment ();
+			text += " ; " + (*it)->getComment ();
 		}
 
 		stream << text << std::endl;
