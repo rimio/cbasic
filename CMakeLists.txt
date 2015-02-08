@@ -44,6 +44,7 @@ set (HEADER_FILES
 	# backends
 	${SOURCE_DIR}/backends/interface/backend.h
 	${SOURCE_DIR}/backends/x86-nasm/x86-nasm-backend.h
+	${SOURCE_DIR}/backends/x86-nasm/x86-nasm-primitives.h
 
 	# symbols
 	${SOURCE_DIR}/symbols/symbol-table.h
@@ -84,6 +85,7 @@ set (SOURCE_FILES
 	# backends
 	${SOURCE_DIR}/backends/interface/backend.cc
 	${SOURCE_DIR}/backends/x86-nasm/x86-nasm-backend.cc
+	${SOURCE_DIR}/backends/x86-nasm/x86-nasm-primitives.cc
 
 	# symbols
 	${SOURCE_DIR}/symbols/symbol-table.cc

@@ -37,7 +37,7 @@ public:
 	virtual IlAddressType getAddressType () const = 0;
 
 	// Get the type
-	BasicType getType () const { return type_; }
+	virtual BasicType getType () const { return type_; }
 };
 
 //
@@ -86,6 +86,7 @@ public:
 	IlAddressType getAddressType () const { return ILA_CONSTANT; }
 	int getInt () const { return ival_; }
 	float getFloat () const { return fval_; }
+	std::string getString () const { return sval_; }
 };
 
 //
