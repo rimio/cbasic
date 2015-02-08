@@ -393,6 +393,7 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			break;
 
 		case ILOP_DIV:
+		case ILOP_MOD:
 			{
 				//
 				// IMUL is defined as EAX = EDX:EAX / operand
@@ -429,7 +430,17 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 								i_dest_addr
 							);
 					ilist.push_back (mov);
-					i_dest_addr = new RegisterNasmAddress (REG_EAX);
+
+					if (op_type == ILOP_DIV)
+					{
+						// Division, we take result from EAX
+						i_dest_addr = new RegisterNasmAddress (REG_EAX);
+					}
+					else
+					{
+						// Modulo, we take remainder from EDX
+						i_dest_addr = new RegisterNasmAddress (REG_EDX);
+					}
 				}
 
 				// Move operand if it's in EDX
