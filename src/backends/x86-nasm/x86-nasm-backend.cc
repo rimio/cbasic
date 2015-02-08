@@ -2,32 +2,91 @@
 #include <cstdlib>
 #include <cassert>
 #include "error/error.h"
+#include "ilang/il-address.h"
 #include "x86-nasm-primitives.h"
 
 //
 // Printing aliases
 //
 #define INDENT			"  "
-#define ENTRY_POINT		"__program_start"
-
-// Location macros
-#define EFFECTIVE_ADDRESS(sym)			(std::string ("[") + std::string ((sym)) + std::string ("]"))
+#define ENTRY_POINT		"__main"
 
 //
 // Implementation of backend
 //
-int X86NasmBackend::compileBlockStorage (IlBlock *block)
+X86NasmBackend::X86NasmBackend ()
 {
-	// TODO: intelligent storage for temps
+	NasmInstruction *ins;
+
+	// Create program exit instruction list
+	ins = new MovNasmInstruction (
+				new RegisterNasmAddress (REG_EAX),
+				new ImmediateNasmAddress ((unsigned int) 1)
+			);
+	ins->setComment ("program exit point");
+	program_exit_.push_back (ins);
+	ins = new MovNasmInstruction (
+				new RegisterNasmAddress (REG_EBX),
+				new ImmediateNasmAddress ((unsigned int) 0)
+			);
+	program_exit_.push_back (ins);
+	ins = new IntNasmInstruction (0x80);
+	program_exit_.push_back (ins);
+}
+
+int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instruction, NasmInstructionList &ilist, unsigned int &stack_offset)
+{
+	IlAddress *r_iladdr = instruction->getResult ();
+	IlAddress *op1_iladdr = instruction->getOperand1 ();
+	IlAddress *op2_iladdr = instruction->getOperand2 ();
+	IlOperatorType op_type = instruction->getOperator ();
+
+	assert (r_iladdr != nullptr && op1_iladdr != nullptr);
+
+	// Get result address
+	NasmAddress *r_addr = NasmAddress::fromIl (r_iladdr, data_, bss_, stack_offset);
+	if (r_addr == nullptr)
+	{
+		return ER_FAILED;
+	}
+
+	// Get op1 address
+	NasmAddress *op1_addr = NasmAddress::fromIl (op1_iladdr, data_, bss_, stack_offset);
+	if (op1_addr == nullptr)
+	{
+		return ER_FAILED;
+	}
+
+	//
+	// One operand case
+	//
+	if (op2_iladdr == nullptr)
+	{
+		return NO_ERROR;
+	}
+
+	// Get op2 address
+	NasmAddress *op2_addr = NasmAddress::fromIl (op2_iladdr, data_, bss_, stack_offset);
+	if (op2_addr == nullptr)
+	{
+		return ER_FAILED;
+	}
+
+	//
+	// Two operand case
+	//
+
 	return NO_ERROR;
 }
 
-int X86NasmBackend::compileInstruction (IlInstruction *instruction, std::ofstream &file)
+int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstructionList &ilist, unsigned int &stack_offset)
 {
 	IlInstructionType itype = instruction->getInstructionType ();
 
 	if (itype == ILI_ASSIGNMENT)
 	{
+		AssignmentIlInstruction *asi = (AssignmentIlInstruction *) instruction;
+		return compileAssignmentInstruction (asi, ilist, stack_offset);
 	}
 	else if (itype == ILI_LABEL)
 	{
@@ -37,32 +96,74 @@ int X86NasmBackend::compileInstruction (IlInstruction *instruction, std::ofstrea
 	return NO_ERROR;
 }
 
-int X86NasmBackend::compileBlock (IlBlock *block, std::ofstream &file)
+int X86NasmBackend::compileBlock (IlBlock *block, NasmInstructionList &ilist)
 {
-	// First stage - decide locations for operation results
-	if (compileBlockStorage (block) != NO_ERROR)
-	{
-		return ER_FAILED;
-	}
+	NasmInstruction *ins;
 
-	// Second stage - actual compilation
+	// Stack offset
+	unsigned int stack_offset = 0;
+
+	// Compile instructions
 	IlBlockIterator block_it = block->getIterator ();
 	for (IlInstructionIterator it = std::get<0> (block_it);
 		 it != std::get<1> (block_it); it ++)
 	{
 		IlInstruction *ins = (*it);
-		if (compileInstruction (ins, file) != NO_ERROR)
+		if (compileInstruction (ins, ilist, stack_offset) != NO_ERROR)
 		{
 			return ER_FAILED;
 		}
 	}
 
+	// Save frame
+	// We are building the following instructions at the beginning of the block:
+	//   PUSH EBP
+	//   MOV  EBP, ESP
+	//   SUB  ESP, stack_offset
+	// We are inserting them in reverse order so they get executed in the correct order
+	ins = new SubNasmInstruction (
+				new RegisterNasmAddress (REG_ESP),
+				new ImmediateNasmAddress ((unsigned int) stack_offset)
+			);
+	ilist.push_front (ins);
+	ins = new MovNasmInstruction (
+				new RegisterNasmAddress (REG_EBP),
+				new RegisterNasmAddress (REG_ESP)
+			);
+	ilist.push_front (ins);
+	ins = new PushNasmInstruction (
+				new RegisterNasmAddress (REG_EBP)
+			);
+	ins->setComment ("save frame");
+	ilist.push_front (ins);
+
 	return NO_ERROR;
+}
+
+void X86NasmBackend::printInstructionList (NasmInstructionList &ilist, std::ofstream &stream)
+{
+	for (NasmInstructionList::iterator it = ilist.begin ();
+		 it != ilist.end (); it ++)
+	{
+		if ((*it)->getComment ().compare ("") != 0)
+		{
+			// We have a comment, print it
+			stream << INDENT << "; " << (*it)->getComment () << std::endl;
+		}
+
+		stream << INDENT << (*it)->toString () << std::endl;
+	}
 }
 
 int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 {
 	// Compile program to Nasm primitives
+	NasmInstructionList main_block;
+	if (compileBlock (program->getMainBlock (), main_block) != NO_ERROR)
+	{
+		// Error should have been printed
+		return ER_FAILED;
+	}
 
 	// Determine assembly file
 	std::string assembly_file = output_file + ".asm";
@@ -98,12 +199,10 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 
 	// Write main block
 	assembly << ENTRY_POINT << ":" << std::endl;
+	printInstructionList (main_block, assembly);
 
 	// Write exit point
-	assembly << INDENT << "; program exit point" << std::endl;
-	//assembly << INDENT << MOV << EAX << SEPARATOR << "1" << std::endl;
-	//assembly << INDENT << MOV << EBX << SEPARATOR << "0" << std::endl;
-	//assembly << INDENT << INT << "80h" << std::endl;
+	printInstructionList (program_exit_, assembly);
 
 	// Close assembly
 	assembly.close ();

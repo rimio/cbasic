@@ -317,7 +317,7 @@ int main (int argc, char **argv)
 	// Compile
 	if (backend->compile (program, *output_file) != NO_ERROR)
 	{
-		// Error should have been printed
+		Error::error ("failed to compile '" + *backend_target + "' target");
 		return ER_FAILED;
 	}
 

@@ -19,7 +19,7 @@ NasmDataDefinition::NasmDataDefinition (std::string label, std::string str)
 	size_ = 1 + (slen > 255 ? 255 : slen);
 	data_ = (char *) malloc (size_);
 	memcpy (data_, str.c_str (), size_ - 1);
-	data_[size_] = 0; // Terminator
+	data_[size_ - 1] = 0; // Terminator
 
 	label_ = label;
 }
@@ -37,7 +37,7 @@ std::string NasmDataDefinition::toString ()
 	return label_ + " db " + hx.str();
 }
 
-NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssMap &bss)
+NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssMap &bss, unsigned int &stack_offset)
 {
 	IlAddressType atype = iladdr->getAddressType ();
 	NasmAddress *naddr = nullptr;
@@ -111,7 +111,22 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 	}
 	else if (atype == ILA_TEMPORARY)
 	{
-		assert (false);
+		TemporaryIlAddress *ta = (TemporaryIlAddress *) iladdr;
+		if (ta->getType () == BT_INT || ta->getType () == BT_FLOAT)
+		{
+			stack_offset += 4;
+			naddr = new MemoryBasedNasmAddress (REG_EBP, stack_offset);
+		}
+		else if (ta->getType () == BT_STRING)
+		{
+			stack_offset += 256;
+			naddr = new MemoryBasedNasmAddress (REG_EBP, stack_offset);
+		}
+		else
+		{
+			Error::internalError ("[x86-nasm] unknown temporary type");
+			return nullptr;
+		}
 	}
 	else
 	{

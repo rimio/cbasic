@@ -17,11 +17,16 @@ private:
 	NasmDataMap data_;
 	NasmBssMap bss_;
 
-	int compileBlockStorage (IlBlock *block);
-	int compileInstruction (IlInstruction *instruction, std::ofstream &file);
-	int compileBlock (IlBlock *block, std::ofstream &file);
+	NasmInstructionList program_exit_;
+
+	int compileAssignmentInstruction (AssignmentIlInstruction *instruction, NasmInstructionList &ilist, unsigned int &stack_offset);
+	int compileInstruction (IlInstruction *instruction, NasmInstructionList &ilist, unsigned int &stack_offset);
+	int compileBlock (IlBlock *block, NasmInstructionList &ilist);
+	void printInstructionList (NasmInstructionList &ilist, std::ofstream &stream);
 
 public:
+	X86NasmBackend ();
+
 	int compile (IlProgram *program, std::string output_file);
 };
 
