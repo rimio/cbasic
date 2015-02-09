@@ -142,12 +142,12 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 			if (ta->getType () == BT_INT || ta->getType () == BT_FLOAT)
 			{
 				offset = ssize + 4;
-				stack.insert ( { ta->getName (), NasmStackDefinition (offset, 4) } );
+				stack.emplace (ta->getName (), NasmStackDefinition (4, offset));
 			}
 			else if (ta->getType () == BT_STRING)
 			{
 				offset = ssize + 256;
-				stack.insert ( { ta->getName (), NasmStackDefinition (offset, 256) } );
+				stack.emplace (ta->getName (), NasmStackDefinition (256, offset));
 			}
 			else
 			{

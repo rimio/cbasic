@@ -9,7 +9,8 @@
 enum IlInstructionType
 {
 	ILI_ASSIGNMENT,
-	ILI_LABEL
+	ILI_LABEL,
+	ILI_JUMP
 };
 
 //
@@ -123,6 +124,34 @@ public:
 	std::string getName () const { return name_; }
 
 	IlInstructionType getInstructionType () const { return ILI_LABEL; }
+};
+
+//
+// Unconditional and conditional jump instruction
+//
+class JumpIlInstruction : public IlInstruction
+{
+private:
+	IlAddress *condition_;
+	LabelIlInstruction *target_;
+	bool negate_;
+	// Hidden constructor
+	JumpIlInstruction () { }
+public:
+	// Unconditional
+	JumpIlInstruction (LabelIlInstruction *target) : condition_ (nullptr), target_ (target), negate_ (false) { }
+	// Conditional
+	JumpIlInstruction (LabelIlInstruction *target, IlAddress *condition) :
+		condition_ (condition), target_ (target), negate_ (false) { }
+	JumpIlInstruction (LabelIlInstruction *target, IlAddress *condition, bool negate) :
+		condition_ (condition), target_ (target), negate_ (negate_) { }
+
+	std::string toString ();
+	IlInstructionType getInstructionType () const { return ILI_JUMP; }
+
+	bool negateCondition () const { return negate_; }
+	IlAddress *getCondition () const { return condition_; }
+	LabelIlInstruction *getTarget () const { return target_; }
 };
 
 #endif

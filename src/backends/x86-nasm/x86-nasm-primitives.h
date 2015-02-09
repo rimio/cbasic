@@ -195,6 +195,8 @@ public:
 //
 enum NasmInstructionType
 {
+	NI_LABEL,			// Just a label, it does nothing
+
 	NI_INT,
 	NI_MOV,
 
@@ -212,7 +214,12 @@ enum NasmInstructionType
 	NI_FSTP,
 
 	NI_PUSH,
-	NI_POP
+	NI_POP,
+
+	NI_TEST,
+	NI_JMP,
+	NI_JZ,
+	NI_JNZ
 };
 
 //
@@ -233,6 +240,20 @@ public:
 
 	std::string getComment () const { return comment_; }
 	void setComment (std::string comm) { comment_ = comm; }
+};
+
+class LabelNasmInstruction : public NasmInstruction
+{
+protected:
+	// Comment that will be displayed before instruction
+	std::string label_;
+	// Hidden constructor
+	LabelNasmInstruction () : label_ ("") { }
+public:
+	LabelNasmInstruction (std::string label) : label_ (label) { }
+
+	std::string toString () { return label_ + ":"; }
+	NasmInstructionType getInstructionType () const { return NI_LABEL; }
 };
 
 typedef std::list<NasmInstruction *> NasmInstructionList;
@@ -438,13 +459,71 @@ class PopNasmInstruction : public NasmInstruction
 {
 private:
 	NasmAddress *opr_;
-
+	// Hidden constructor
+	PopNasmInstruction () { }
 public:
 	PopNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
 	~PopNasmInstruction () { if (opr_ != nullptr) delete opr_; }
 
 	std::string toString () { return "pop  " + (opr_ != nullptr ? opr_->toString () : ""); }
 	NasmInstructionType getInstructionType () const { return NI_POP; }
+};
+
+class TestNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *op1_;
+	NasmAddress *op2_;
+	// Hidden constructor
+	TestNasmInstruction () { };
+public:
+	TestNasmInstruction (NasmAddress *op1, NasmAddress *op2) : op1_ (op1), op2_ (op2) { };
+	~TestNasmInstruction () { delete op1_; delete op2_; }
+
+	std::string toString () { return "test " + op1_->toString () + ", " + op2_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_TEST; }
+};
+
+class JmpNasmInstruction : public NasmInstruction
+{
+private:
+	std::string target_;
+	// Hidden constructor
+	JmpNasmInstruction () { }
+
+public:
+	JmpNasmInstruction (std::string target) : target_ (target) { };
+
+	std::string toString () { return "jmp  " + target_; }
+	NasmInstructionType getInstructionType () const { return NI_JMP; }
+};
+
+class JzNasmInstruction : public NasmInstruction
+{
+private:
+	std::string target_;
+	// Hidden constructor
+	JzNasmInstruction () { }
+
+public:
+	JzNasmInstruction (std::string target) : target_ (target) { };
+
+	std::string toString () { return "jz   " + target_; }
+	NasmInstructionType getInstructionType () const { return NI_JZ; }
+};
+
+class JnzNasmInstruction : public NasmInstruction
+{
+private:
+	std::string target_;
+	// Hidden constructor
+	JnzNasmInstruction () { }
+
+public:
+	JnzNasmInstruction (std::string target) : target_ (target) { };
+
+	std::string toString () { return "jnz  " + target_; }
+	NasmInstructionType getInstructionType () const { return NI_JNZ; }
 };
 
 #endif

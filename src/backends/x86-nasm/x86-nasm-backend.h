@@ -20,6 +20,7 @@ private:
 	NasmInstructionList program_exit_;
 
 	int compileAssignmentInstruction (AssignmentIlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack);
+	int compileJumpInstruction (JumpIlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack);
 	int compileInstruction (IlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack);
 	int compileBlock (IlBlock *block, NasmInstructionList &ilist);
 	void printInstructionList (NasmInstructionList &ilist, std::ofstream &stream);

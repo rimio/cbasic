@@ -35,3 +35,22 @@ std::string LabelIlInstruction::toString ()
 {
 	return name_ + ":";
 }
+
+std::string JumpIlInstruction::toString ()
+{
+	if (condition_ != nullptr)
+	{
+		if (negate_)
+		{
+			return "iffalse (" + condition_->toString () + ") jumpto " + target_->getName ();
+		}
+		else
+		{
+			return "iftrue (" + condition_->toString () + ") jumpto " + target_->getName ();
+		}
+	}
+	else
+	{
+		return "jumpto " + target_->getName ();
+	}
+}

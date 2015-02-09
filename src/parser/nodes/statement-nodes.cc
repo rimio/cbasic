@@ -114,8 +114,54 @@ WhileStatementNode::~WhileStatementNode ()
 
 std::tuple<int, IlAddress *> WhileStatementNode::generateIlCode (IlBlock *block)
 {
-	assert (false);
-	return std::make_tuple(ER_FAILED, nullptr);
+	// Generate labels
+	LabelIlInstruction *while_start = new LabelIlInstruction ();
+	LabelIlInstruction *while_end = new LabelIlInstruction ();
+
+	// Add start label
+	block->addInstruction (while_start);
+
+	// Generate code for condition
+	std::tuple<int, IlAddress *> ret = condition_->generateIlCode (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple(ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+
+	// Generate conditional jump
+	JumpIlInstruction *cjump = new JumpIlInstruction (while_end, std::get<1>(ret), true);
+	block->addInstruction (cjump);
+
+	// Generate code for inner statements
+	ParserNode *st = statements_;
+	while (st != nullptr)
+	{
+		if (st->getNodeType () != PT_STATEMENT)
+		{
+			Error::internalError ("while block contains non-statement");
+			return std::make_tuple(ER_FAILED, nullptr);
+		}
+
+		ret = st->generateIlCode (block);
+		if (std::get<0>(ret) != NO_ERROR)
+		{
+			return std::make_tuple(ER_FAILED, nullptr);
+		}
+
+		st = st->getNext ();
+	}
+
+	// Generate unconditional jump
+	JumpIlInstruction *jump = new JumpIlInstruction (while_start);
+	block->addInstruction (jump);
+
+	// Add end label
+	block->addInstruction (while_end);
+
+	// All ok
+	// Do NOT return result address, this is a statement!
+	return std::make_tuple(NO_ERROR, nullptr);
 }
 
 std::string WhileStatementNode::toString ()

@@ -118,10 +118,9 @@ public:
 	ExpressionNode *getCondition () const { return condition_; }
 	ParserNode *getStatements () const { return statements_; }
 
-	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
-
 	// Implementations of StatementNode pure virtual functions
 	StatementType getStatementType () const { return ST_WHILE; }
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 
 	// Implementations of ParserNode pure virtual functions
 	std::string toString ();

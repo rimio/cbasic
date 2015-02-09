@@ -599,6 +599,55 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 	return NO_ERROR;
 }
 
+int X86NasmBackend::compileJumpInstruction (JumpIlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack)
+{
+	IlAddress *cond = instruction->getCondition ();
+	LabelIlInstruction *target = instruction->getTarget();
+
+	if (cond != nullptr)
+	{
+		NasmAddress *addr = NasmAddress::fromIl (cond, data_, bss_, stack);
+
+		// If immediate, bring to register
+		if (addr->getAddressType () == ADDR_IMMEDIATE)
+		{
+			MovNasmInstruction *mov = new MovNasmInstruction (
+						addr,
+						new RegisterNasmAddress (REG_EAX)
+					);
+			ilist.push_back (mov);
+			addr = new RegisterNasmAddress (REG_EAX);
+		}
+
+		// Generate TEST instruction
+		TestNasmInstruction *test = new TestNasmInstruction (
+					addr,
+					new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)
+				);
+		ilist.push_back (test);
+
+		// Generate jump
+		NasmInstruction *jump = nullptr;
+		if (instruction->negateCondition ())
+		{
+			jump = new JzNasmInstruction (target->getName ());
+		}
+		else
+		{
+			jump = new JnzNasmInstruction (target->getName ());
+		}
+		ilist.push_back (jump);
+	}
+	else
+	{
+		JmpNasmInstruction *jmp = new JmpNasmInstruction (target->getName ());
+		ilist.push_back (jmp);
+	}
+
+	// All ok
+	return NO_ERROR;
+}
+
 int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack)
 {
 	IlInstructionType itype = instruction->getInstructionType ();
@@ -610,6 +659,19 @@ int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstruct
 	}
 	else if (itype == ILI_LABEL)
 	{
+		LabelIlInstruction *li = (LabelIlInstruction *) instruction;
+		LabelNasmInstruction *lni = new LabelNasmInstruction (li->getName ());
+		ilist.push_back (lni);
+	}
+	else if (itype == ILI_JUMP)
+	{
+		JumpIlInstruction *jmp = (JumpIlInstruction *) instruction;
+		return compileJumpInstruction (jmp, ilist, stack);
+	}
+	else
+	{
+		Error::internalError ("[x86-nasm] unknown intermediate language instruction");
+		return ER_FAILED;
 	}
 
 	// All ok
@@ -665,7 +727,7 @@ void X86NasmBackend::printInstructionList (NasmInstructionList &ilist, std::ofst
 	for (NasmInstructionList::iterator it = ilist.begin ();
 		 it != ilist.end (); it ++)
 	{
-		std::string text = INDENT + (*it)->toString ();
+		std::string text = ((*it)->getInstructionType () != NI_LABEL ? INDENT : "") + (*it)->toString ();
 		if ((*it)->getComment ().compare ("") != 0)
 		{
 			if (text.length () < 30)
