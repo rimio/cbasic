@@ -673,7 +673,6 @@ int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstruct
 		ParamIlInstruction *pi = (ParamIlInstruction *) instruction;
 		NasmAddress *addr = NasmAddress::fromIl (pi->getParameter (), data_, bss_, stack);
 		PushNasmInstruction *push = new PushNasmInstruction (addr);
-		push->setComment (pi->toString ());
 		ilist.push_back (push);
 	}
 	else if (itype == ILI_CALL)
@@ -681,6 +680,13 @@ int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstruct
 		CallIlInstruction *ci = (CallIlInstruction *) instruction;
 		CallNasmInstruction *call = new CallNasmInstruction (ci->getFunction ());
 		ilist.push_back (call);
+
+		// Pop parameters
+		AddNasmInstruction *add = new AddNasmInstruction (
+					new RegisterNasmAddress (REG_ESP),
+					new ImmediateNasmAddress ((unsigned int) ci->getParameterCount () * 4)
+				);
+		ilist.push_back (add);
 	}
 	else
 	{

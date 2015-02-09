@@ -182,16 +182,19 @@ class CallIlInstruction : public IlInstruction
 {
 protected:
 	std::string function_;
+	unsigned int param_count_;
 	// Hidden constructor
 	CallIlInstruction () { };
 public:
-	CallIlInstruction (std::string function) : function_ (function) { }
+	CallIlInstruction (std::string function, unsigned int param_count) :
+		function_ (function), param_count_ (param_count) { }
 	~CallIlInstruction () { }
 
 	std::string toString ();
 	IlInstructionType getInstructionType () const { return ILI_CALL; };
 
 	std::string getFunction () const { return function_; }
+	unsigned int getParameterCount () const { return param_count_; }
 };
 
 #endif

@@ -265,12 +265,14 @@ std::string PrintStatementNode::print (std::string indent)
 std::tuple<int, IlAddress *> PrintStatementNode::generateIlCode (IlBlock *block)
 {
 	std::string format_string = "";
+	unsigned int pcount = 0;
 
 	// Make a list of all parameters
 	std::list<ExpressionNode *> expr_list;
 	for (ExpressionNode *e = list_; e != nullptr; e = (ExpressionNode *) e->getNext ())
 	{
 		expr_list.push_back (e);
+		pcount ++;
 
 		switch (e->getType ())
 		{
@@ -314,7 +316,7 @@ std::tuple<int, IlAddress *> PrintStatementNode::generateIlCode (IlBlock *block)
 	block->addInstruction (param);
 
 	// Generate call
-	CallIlInstruction *call = new CallIlInstruction ("printf");
+	CallIlInstruction *call = new CallIlInstruction ("printf", pcount + 1);
 	block->addInstruction (call);
 
 	// All ok
