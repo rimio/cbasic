@@ -18,7 +18,7 @@ The full language specification can be found here: http://www.cpm.z80.de/manuals
 Currently supported syntax and features:
 * 32bit integer (```identifier%```) and floating point (```identifier```) types and arithmetic
 * 255 byte strings (```identifier$```) with concatenation and comparisons
-* variable declarations (```let identifier = expression```)
+* variable declarations (```LET identifier = expression```)
 * if-then block (```IF condition THEN [...] ENDIF```)
 * if-then-else block (```IF condition THEN [...] ELSE [...] ENDIF```)
 * loop statement (```WHILE condtion [...] WEND```)
