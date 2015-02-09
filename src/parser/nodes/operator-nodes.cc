@@ -166,6 +166,58 @@ int RelationalOperatorNode::inferType ()
 	}
 }
 
+std::tuple<int, IlAddress *> RelationalOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+	assert (std::get<2>(ret) != nullptr);
+
+	// Determine operator
+	IlOperatorType ilop_type;
+	switch (getOperatorType ())
+	{
+	case OT_GT:
+		ilop_type = ILOP_GT;
+		break;
+
+	case OT_GT_EQ:
+		ilop_type = ILOP_GE;
+		break;
+
+	case OT_LT:
+		ilop_type = ILOP_LT;
+		break;
+
+	case OT_LT_EQ:
+		ilop_type = ILOP_LE;
+		break;
+
+	case OT_EQUAL:
+		ilop_type = ILOP_EQ;
+		break;
+
+	case OT_NOT_EQUAL:
+		ilop_type = ILOP_NE;
+		break;
+
+	default:
+		assert (false);
+		ilop_type = ILOP_NONE;
+		break;
+	}
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ilop_type);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
+}
+
 int LogicalOperatorNode::inferType ()
 {
 	// We know for sure the return type

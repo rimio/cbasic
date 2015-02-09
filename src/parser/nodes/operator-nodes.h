@@ -112,10 +112,11 @@ protected:
 
 public:
 	int inferType ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 };
 
 //
-// Relational operator base class
+// Logical operator base class
 //
 class LogicalOperatorNode : public OperatorNode
 {

@@ -77,6 +77,7 @@ public:
 //
 enum NasmRegister
 {
+	REG_AL,
 	REG_EAX,
 	REG_EBX,
 	REG_ECX,
@@ -89,7 +90,7 @@ enum NasmRegister
 	REG_ST1
 };
 
-static std::string NasmRegisterAlias[] = { "eax", "ebx", "ecx", "edx", "esp", "ebp", "st0", "st1" };
+static std::string NasmRegisterAlias[] = { "al", "eax", "ebx", "ecx", "edx", "esp", "ebp", "st0", "st1" };
 
 //
 // Data locations
@@ -233,9 +234,12 @@ enum NasmInstructionType
 	NI_POP,
 
 	NI_TEST,
+	NI_CMP,
 	NI_JMP,
 	NI_JZ,
 	NI_JNZ,
+	NI_SETXX,
+	NI_CMOVXX,
 
 	NI_CALL
 };
@@ -502,6 +506,21 @@ public:
 	NasmInstructionType getInstructionType () const { return NI_TEST; }
 };
 
+class CmpNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *op1_;
+	NasmAddress *op2_;
+	// Hidden constructor
+	CmpNasmInstruction () { };
+public:
+	CmpNasmInstruction (NasmAddress *op1, NasmAddress *op2) : op1_ (op1), op2_ (op2) { };
+	~CmpNasmInstruction () { delete op1_; delete op2_; }
+
+	std::string toString () { return "cmp  " + op1_->toString () + ", " + op2_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_CMP; }
+};
+
 class JmpNasmInstruction : public NasmInstruction
 {
 private:
@@ -542,6 +561,38 @@ public:
 
 	std::string toString () { return "jnz  " + target_; }
 	NasmInstructionType getInstructionType () const { return NI_JNZ; }
+};
+
+class SetxxNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *target_;
+	std::string suffix_;
+	// Hidden constructor
+	SetxxNasmInstruction () { }
+
+public:
+	SetxxNasmInstruction (NasmAddress *target, std::string suffix) : target_ (target), suffix_ (suffix) { };
+
+	std::string toString () { return "set" + suffix_ + " " + target_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_SETXX; }
+};
+
+class CmovxxNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *dest_;
+	NasmAddress *src_;
+	std::string suffix_;
+	// Hidden constructor
+	CmovxxNasmInstruction () { }
+
+public:
+	CmovxxNasmInstruction (NasmAddress *dest, NasmAddress *src, std::string suffix) :
+		dest_ (dest), src_ (src), suffix_ (suffix) { };
+
+	std::string toString () { return "cmov" + suffix_ + " " + dest_->toString () + ", " + src_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_CMOVXX; }
 };
 
 class CallNasmInstruction : public NasmInstruction

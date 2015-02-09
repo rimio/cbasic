@@ -9,13 +9,17 @@ let b = a * 2.3
 let c = b / 2.6
 let d = b + c - a
 
+let op1% = 2
+let op2% = 2
+
+print op1% < op2%, " ", op1% > op2%, " ", op1% <= op2%, " ", op1% >= op2%, " ", op1% = op2%, " ", op1% <> op2%
+
 print "Ana are " , x% + y% ; " mere"
 
-let count% = 10
-while count%
-	let mres% = count% mod 2
-	if  mres% then
+let count% = 0
+while count% < 12
+	if  count% mod 2 then
 		print count%
 	endif
-	let count% = count% - 1
+	let count% = count% + 1
 wend

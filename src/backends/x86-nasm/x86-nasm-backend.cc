@@ -578,6 +578,66 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			}
 			break;
 
+		case ILOP_GT:
+		case ILOP_GE:
+		case ILOP_LT:
+		case ILOP_LE:
+		case ILOP_EQ:
+		case ILOP_NE:
+			{
+				// Generate CMP instruction
+				CmpNasmInstruction *cmp = new CmpNasmInstruction (i_dest_addr, i_opr_addr);
+				ilist.push_back (cmp);
+
+				// Clear EAX
+				MovNasmInstruction *mov = new MovNasmInstruction (
+							new RegisterNasmAddress (REG_EAX),
+							new ImmediateNasmAddress ((unsigned int) 0)
+						);
+				ilist.push_back (mov);
+
+				// Move 0xFFFFFFFF (aka true) into ebx
+				// CMOVxx doesn't do immediates
+				mov = new MovNasmInstruction (
+							new RegisterNasmAddress (REG_EBX),
+							new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)
+						);
+				ilist.push_back (mov);
+
+				// Switch for each operator type
+				RegisterNasmAddress *eax = new RegisterNasmAddress (REG_EAX);
+				RegisterNasmAddress *ebx = new RegisterNasmAddress (REG_EBX);
+				switch (op_type)
+				{
+				case ILOP_GT:
+					inst = new CmovxxNasmInstruction (eax, ebx, "g");
+					break;
+				case ILOP_GE:
+					inst = new CmovxxNasmInstruction (eax, ebx, "ge");
+					break;
+				case ILOP_LT:
+					inst = new CmovxxNasmInstruction (eax, ebx, "l");
+					break;
+				case ILOP_LE:
+					inst = new CmovxxNasmInstruction (eax, ebx, "le");
+					break;
+				case ILOP_EQ:
+					inst = new CmovxxNasmInstruction (eax, ebx, "e");
+					break;
+				case ILOP_NE:
+					inst = new CmovxxNasmInstruction (eax, ebx, "ne");
+					break;
+
+				default:
+					assert (false);
+					return ER_FAILED;
+				}
+
+				// Set destination
+				i_dest_addr = new RegisterNasmAddress (REG_EAX);
+			}
+			break;
+
 		default:
 			Error::internalError ("[x86-nasm] invalid operator '" + IlOperatorAlias[op_type] + "' for integer arithmetic op");
 			return ER_FAILED;
