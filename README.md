@@ -13,4 +13,13 @@ The compiled programs are linked with the 32bit ```libc``` library. If you have 
 
 ##### The language
 
-The language specification can be found here: http://www.cpm.z80.de/manuals/cbasic-m.pdf
+The full language specification can be found here: http://www.cpm.z80.de/manuals/cbasic-m.pdf
+
+Currently supported syntax and features:
+* 32bit integer (```identifier%```) and floating point (```identifier```) types and arithmetic
+* 255 byte strings (```identifier$```) with concatenation and comparisons
+* variable declarations (```let identifier = expression```)
+* if-then block (```IF condition THEN [...] ENDIF```)
+* if-then-else block (```IF condition THEN [...] ELSE [...] ENDIF```)
+* loop statement (```WHILE condtion [...] WEND```)
+* print statement (```PRINT expr [, expr ...]```)
