@@ -69,17 +69,39 @@ int ParserContext::parseFile (std::string &filename)
 
 int ParserContext::semanticAnalysis ()
 {
+	WalkTuple ret;
+
 	// Find symbols
-	root_node_ = TreeWalker::leafToRoot (root_node_, find_symbols, false);
+	ret = TreeWalker::leafToRoot (root_node_, find_symbols, false);
+	root_node_ = std::get<1> (ret);
+	if (std::get<0> (ret) != NO_ERROR)
+	{
+		return ER_FAILED;
+	}
 
 	// Resolve identifiers
-	root_node_ = TreeWalker::leafToRoot (root_node_, resolve_identifiers, false);
+	ret = TreeWalker::leafToRoot (root_node_, resolve_identifiers, false);
+	root_node_ = std::get<1> (ret);
+	if (std::get<0> (ret) != NO_ERROR)
+	{
+		return ER_FAILED;
+	}
 
 	// Check types
-	root_node_ = TreeWalker::leafToRoot (root_node_, check_types, false);
+	ret = TreeWalker::leafToRoot (root_node_, check_types, false);
+	root_node_ = std::get<1> (ret);
+	if (std::get<0> (ret) != NO_ERROR)
+	{
+		return ER_FAILED;
+	}
 
 	// Fold constants
-	root_node_ = TreeWalker::leafToRoot (root_node_, fold_constants, false);
+	ret = TreeWalker::leafToRoot (root_node_, fold_constants, false);
+	root_node_ = std::get<1> (ret);
+	if (std::get<0> (ret) != NO_ERROR)
+	{
+		return ER_FAILED;
+	}
 
 	// All ok
 	return NO_ERROR;

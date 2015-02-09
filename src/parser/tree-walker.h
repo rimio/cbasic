@@ -3,6 +3,7 @@
 
 #include <list>
 #include <stack>
+#include <tuple>
 #include "nodes/parser-node.h"
 #include "ilang/il-block.h"
 
@@ -12,6 +13,7 @@
 struct TreeWalkContext
 {
 	std::stack<ParserNode *> node_stack;
+	int ret_code;
 };
 
 //
@@ -20,6 +22,11 @@ struct TreeWalkContext
 // The walk function will delete the old node and link the new node in it's place (parent reference and list reference).
 //
 typedef ParserNode * (*WALK_CALLBACK)(ParserNode *, struct TreeWalkContext *);
+
+//
+// Walk return tuple (error code, node)
+//
+typedef std::tuple<int, ParserNode *> WalkTuple;
 
 //
 // Static class that exposes routines for walking a parse tree
@@ -36,7 +43,7 @@ public:
 	// callback (in): function to call for each node
 	// omit_root_list (in): if true, will not walk root->getNext().
 	// Returns root or new tree pointer (if root was replaced).
-	static ParserNode *leafToRoot (ParserNode *root, WALK_CALLBACK callback, bool omit_root_list);
+	static WalkTuple leafToRoot (ParserNode *root, WALK_CALLBACK callback, bool omit_root_list);
 
 	// Function for the walk specific for code generation.
 	// This will only walk the root list and handle function definitions and such high level management.

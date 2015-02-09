@@ -34,6 +34,11 @@ ParserNode *TreeWalker::leafToRootWalk (ParserNode *node, struct TreeWalkContext
 				*child = ret;
 			}
 		}
+
+		if (context->ret_code != NO_ERROR)
+		{
+			break;
+		}
 	}
 
 	// Pop node from stack
@@ -41,7 +46,7 @@ ParserNode *TreeWalker::leafToRootWalk (ParserNode *node, struct TreeWalkContext
 
 	// Walk list
 	ParserNode *next = node->getNext ();
-	if (next != nullptr)
+	if (next != nullptr && context->ret_code == NO_ERROR)
 	{
 		ParserNode *new_next = leafToRootWalk (next, context, callback);
 		if (new_next != next)
@@ -53,17 +58,23 @@ ParserNode *TreeWalker::leafToRootWalk (ParserNode *node, struct TreeWalkContext
 		}
 	}
 
-	// Apply to node
-	ParserNode *new_node = callback (node, context);
-
-	// All done
-	return new_node;
+	if (context->ret_code == NO_ERROR)
+	{
+		// Apply to node
+		ParserNode *new_node = callback (node, context);
+		return new_node;
+	}
+	else
+	{
+		return node;
+	}
 }
 
-ParserNode *TreeWalker::leafToRoot (ParserNode *root, WALK_CALLBACK callback, bool omit_root_list)
+WalkTuple TreeWalker::leafToRoot (ParserNode *root, WALK_CALLBACK callback, bool omit_root_list)
 {
 	// Create context
 	struct TreeWalkContext context;
+	context.ret_code = NO_ERROR;
 
 	// Unlink next if omit_root_list
 	ParserNode *saved_list = root->getNext ();
@@ -87,7 +98,7 @@ ParserNode *TreeWalker::leafToRoot (ParserNode *root, WALK_CALLBACK callback, bo
 	}
 
 	// All ok
-	return new_root;
+	return std::make_tuple (context.ret_code, new_root);
 }
 
 int TreeWalker::codeGenerationWalk (ParserNode *root, IlBlock *block)

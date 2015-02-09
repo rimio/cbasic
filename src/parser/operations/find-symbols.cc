@@ -17,7 +17,7 @@ ParserNode *find_symbols (ParserNode *node, struct TreeWalkContext *context)
 			if (sym != nullptr && (sym->getSymbolType () != SY_VARIABLE || ((VariableSymbol *) sym)->getType () != id->getType ()))
 			{
 				Error::semanticError ("symbol '" + id->getName () + "' already declared with different type in the same scope", node);
-				// TODO: error case
+				context->ret_code = ER_FAILED;
 			}
 			else
 			{

@@ -18,7 +18,7 @@ ParserNode *resolve_identifiers (ParserNode *node, struct TreeWalkContext *conte
 		if (sym == nullptr)
 		{
 			Error::semanticError ("symbol '" + in->getName () + "' not found in symbol table", node);
-			// TODO: error case
+			context->ret_code = ER_FAILED;
 			return node;
 		}
 
@@ -27,7 +27,7 @@ ParserNode *resolve_identifiers (ParserNode *node, struct TreeWalkContext *conte
 		{
 			Error::semanticError ("VARIABLE symbol expected, found " + SymbolTypeAlias[sym->getSymbolType ()],
 								  node);
-			// TODO: error case
+			context->ret_code = ER_FAILED;
 			return node;
 		}
 
@@ -38,7 +38,7 @@ ParserNode *resolve_identifiers (ParserNode *node, struct TreeWalkContext *conte
 			Error::semanticError ("cannot map identifier of type " + BasicTypeAlias [in->getType ()]
 								  + " to symbol of type " + BasicTypeAlias [vsym->getType ()],
 								  node);
-			// TODO: error case
+			context->ret_code = ER_FAILED;
 			return node;
 		}
 

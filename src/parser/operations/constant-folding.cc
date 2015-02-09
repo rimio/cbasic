@@ -34,7 +34,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_INT:
 					assert (false);
 					Error::internalError ("redundant int cast detected");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 
 				case BT_FLOAT:
@@ -48,13 +48,13 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_STRING:
 					assert (false);
 					Error::internalError ("cast to integer type from string type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 
 				default:
 					assert (false);
 					Error::internalError ("cast from unknown type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 				break;
@@ -73,19 +73,19 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_FLOAT:
 					assert (false);
 					Error::internalError ("redundant float cast detected");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 
 				case BT_STRING:
 					assert (false);
 					Error::internalError ("cast to float type from string type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 
 				default:
 					assert (false);
 					Error::internalError ("cast from unknown type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 				break;
@@ -93,13 +93,13 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 			case BT_STRING:
 				assert (false);
 				Error::internalError ("cast to string type");
-				// TODO: error case
+				context->ret_code = ER_FAILED;
 				return node;
 
 			default:
 				assert (false);
 				Error::internalError ("cast to unknown type");
-				// TODO: error case
+				context->ret_code = ER_FAILED;
 				return node;
 			}
 		}
@@ -134,12 +134,12 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_STRING:
 					assert (false);
 					Error::internalError ("cannot fold UNARY PLUS on STRING types");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				default:
 					assert (false);
 					Error::internalError ("operand of unknown type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 				break;
@@ -156,12 +156,12 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_STRING:
 					assert (false);
 					Error::internalError ("cannot fold UNARY MINUS on STRING types");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				default:
 					assert (false);
 					Error::internalError ("operand of unknown type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 				break;
@@ -175,17 +175,17 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				case BT_FLOAT:
 					assert (false);
 					Error::internalError ("cannot fold NOT on FLOAT types");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				case BT_STRING:
 					assert (false);
 					Error::internalError ("cannot fold NOT on STRING types");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				default:
 					assert (false);
 					Error::internalError ("operand of unknown type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 				break;
@@ -199,6 +199,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 			{
 				assert (false);
 				Error::internalError ("folding resulted in type different than expected type");
+				context->ret_code = ER_FAILED;
 				delete new_val;
 				return node;
 			}
@@ -237,7 +238,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				{
 					assert (false);
 					Error::internalError ("attempting constant folding on operands of different type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 
@@ -262,7 +263,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				default:
 					assert (false);
 					Error::internalError ("operand of unknown type");
-					// TODO: error case
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 
@@ -299,7 +300,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold MINUS on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					default:
 						break;
@@ -320,7 +321,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold MULTIPLICATION on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					}
 					break;
@@ -333,6 +334,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 						if (i_right == 0)
 						{
 							Error::semanticError ("division by zero while folding constants", right);
+							context->ret_code = ER_FAILED;
 						}
 						else
 						{
@@ -344,6 +346,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 						if (f_right == 0.0f)
 						{
 							Error::semanticError ("division by zero while folding constants", right);
+							context->ret_code = ER_FAILED;
 						}
 						else
 						{
@@ -354,7 +357,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold DIVISION on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					}
 					break;
@@ -368,13 +371,13 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					case BT_FLOAT:
 						assert (false);
 						Error::internalError ("cannot fold MODULO on FLOAT types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 						break;
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold MINUS on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					default:
 						break;
@@ -393,6 +396,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 							else
 							{
 								Error::semanticError ("negative INTEGER base for POWER operator", right);
+								context->ret_code = ER_FAILED;
 							}
 						}
 						break;
@@ -404,12 +408,13 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 						else
 						{
 							Error::semanticError ("negative FLOAT base or exponent for POWER operator", node);
+							context->ret_code = ER_FAILED;
 						}
 						break;
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold OR on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					default:
 						break;
@@ -527,13 +532,13 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					case BT_FLOAT:
 						assert (false);
 						Error::internalError ("cannot fold AND on FLOAT types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 						break;
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold AND on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					default:
 						break;
@@ -549,13 +554,13 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					case BT_FLOAT:
 						assert (false);
 						Error::internalError ("cannot fold OR on FLOAT types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 						break;
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold OR on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					default:
 						break;
@@ -571,13 +576,13 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					case BT_FLOAT:
 						assert (false);
 						Error::internalError ("cannot fold XOR on FLOAT types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 						break;
 					case BT_STRING:
 						assert (false);
 						Error::internalError ("cannot fold XOR on STRING types");
-						// TODO: error case
+						context->ret_code = ER_FAILED;
 						return node;
 					default:
 						break;
@@ -595,6 +600,7 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 				{
 					assert (false);
 					Error::internalError ("folding resulted in type different than expected type");
+					context->ret_code = ER_FAILED;
 					delete new_val;
 					return node;
 				}

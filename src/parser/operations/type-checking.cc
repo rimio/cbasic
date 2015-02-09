@@ -35,6 +35,7 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 				{
 					Error::semanticError ("cannot assign " + BasicTypeAlias [expr_type] + " expression to "
 										  + BasicTypeAlias [id_type] + " variable", asn->getExpression ());
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 
@@ -52,7 +53,7 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 				}
 				else
 				{
-					// TODO: handle error
+					context->ret_code = ER_FAILED;
 					return node;
 				}
 			}
@@ -65,6 +66,7 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 			if (wh->getCondition ()->getType () != BT_INT)
 			{
 				Error::semanticError ("WHILE statement condition must be of type INT", wh->getCondition ());
+				context->ret_code = ER_FAILED;
 				return node;
 			}
 		}
@@ -76,6 +78,7 @@ ParserNode *check_types (ParserNode *node, struct TreeWalkContext *context)
 			if (if_->getCondition ()->getType () != BT_INT)
 			{
 				Error::semanticError ("IF statement condition must be of type INT", if_->getCondition ());
+				context->ret_code = ER_FAILED;
 				return node;
 			}
 		}
