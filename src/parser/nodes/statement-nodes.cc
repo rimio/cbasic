@@ -203,8 +203,71 @@ IfStatementNode::~IfStatementNode ()
 
 std::tuple<int, IlAddress *> IfStatementNode::generateIlCode (IlBlock *block)
 {
-	assert (false);
-	return std::make_tuple(ER_FAILED, nullptr);
+	if (then_ == nullptr && else_ == nullptr)
+	{
+		// This is an empty IF. Should not have gotten here, but just ignore it
+		return std::make_tuple(NO_ERROR, nullptr);
+	}
+
+	// Create else label
+	LabelIlInstruction *else_start = new LabelIlInstruction ();
+
+	// Generate condition code
+	std::tuple<int, IlAddress *> ret = condition_->generateIlCode (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple(ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+
+	// Generate conditional jump
+	JumpIlInstruction *cjump = new JumpIlInstruction (else_start, std::get<1>(ret), true);
+	block->addInstruction (cjump);
+
+	// Generate code for then block
+	ParserNode *st = then_;
+	while (st != nullptr)
+	{
+		if (st->getNodeType () != PT_STATEMENT)
+		{
+			Error::internalError ("THEN block contains non-statement");
+			return std::make_tuple(ER_FAILED, nullptr);
+		}
+
+		ret = st->generateIlCode (block);
+		if (std::get<0>(ret) != NO_ERROR)
+		{
+			return std::make_tuple(ER_FAILED, nullptr);
+		}
+
+		st = st->getNext ();
+	}
+
+	// Add label
+	block->addInstruction (else_start);
+
+	// Generate code for else block
+	st = else_;
+	while (st != nullptr)
+	{
+		if (st->getNodeType () != PT_STATEMENT)
+		{
+			Error::internalError ("ELSE block contains non-statement");
+			return std::make_tuple(ER_FAILED, nullptr);
+		}
+
+		ret = st->generateIlCode (block);
+		if (std::get<0>(ret) != NO_ERROR)
+		{
+			return std::make_tuple(ER_FAILED, nullptr);
+		}
+
+		st = st->getNext ();
+	}
+
+	// All ok
+	// Do NOT return result address, this is a statement!
+	return std::make_tuple(NO_ERROR, nullptr);
 }
 
 std::string IfStatementNode::toString ()

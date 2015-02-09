@@ -11,11 +11,11 @@ let d = b + c - a
 
 print "Ana are " , x% + y% ; " mere"
 
-let y% = 100
-while y%
-	let y% = y% - 1
-	let x% = 1000000
-	while x%
-		let x% = x% - 1
-	wend
+let count% = 10
+while count%
+	let mres% = count% mod 2
+	if  mres% then
+		print count%
+	endif
+	let count% = count% - 1
 wend

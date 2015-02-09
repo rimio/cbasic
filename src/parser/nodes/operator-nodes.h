@@ -211,6 +211,7 @@ public:
 
 	std::string toString ();
 	int inferType ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 	OperatorType getOperatorType () const { return OT_MODULO; }
 };
 

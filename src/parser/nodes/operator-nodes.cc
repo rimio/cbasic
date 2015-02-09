@@ -470,6 +470,24 @@ int ModuloOperatorNode::inferType ()
 	return rc;
 }
 
+std::tuple<int, IlAddress *> ModuloOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+	assert (std::get<2>(ret) != nullptr);
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ILOP_MOD);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
+}
+
 std::string PowerOperatorNode::toString ()
 {
 	return std::string ("^");
