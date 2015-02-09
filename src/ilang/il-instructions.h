@@ -10,7 +10,9 @@ enum IlInstructionType
 {
 	ILI_ASSIGNMENT,
 	ILI_LABEL,
-	ILI_JUMP
+	ILI_JUMP,
+	ILI_PARAM,
+	ILI_CALL
 };
 
 //
@@ -152,6 +154,44 @@ public:
 	bool negateCondition () const { return negate_; }
 	IlAddress *getCondition () const { return condition_; }
 	LabelIlInstruction *getTarget () const { return target_; }
+};
+
+//
+// Parameter pass instruction
+//
+class ParamIlInstruction : public IlInstruction
+{
+protected:
+	IlAddress *param_;
+	// Hidden constructor
+	ParamIlInstruction () { };
+public:
+	ParamIlInstruction (IlAddress *param) : param_ (param) { }
+	~ParamIlInstruction () { }
+
+	std::string toString ();
+	IlInstructionType getInstructionType () const { return ILI_PARAM; };
+
+	IlAddress *getParameter () const { return param_; }
+};
+
+//
+// Function call instruction
+//
+class CallIlInstruction : public IlInstruction
+{
+protected:
+	std::string function_;
+	// Hidden constructor
+	CallIlInstruction () { };
+public:
+	CallIlInstruction (std::string function) : function_ (function) { }
+	~CallIlInstruction () { }
+
+	std::string toString ();
+	IlInstructionType getInstructionType () const { return ILI_CALL; };
+
+	std::string getFunction () const { return function_; }
 };
 
 #endif

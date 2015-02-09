@@ -9,7 +9,7 @@
 // Printing aliases
 //
 #define INDENT			"  "
-#define ENTRY_POINT		"__main"
+#define ENTRY_POINT		"main"
 
 //
 // Implementation of backend
@@ -668,6 +668,20 @@ int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstruct
 		JumpIlInstruction *jmp = (JumpIlInstruction *) instruction;
 		return compileJumpInstruction (jmp, ilist, stack);
 	}
+	else if (itype == ILI_PARAM)
+	{
+		ParamIlInstruction *pi = (ParamIlInstruction *) instruction;
+		NasmAddress *addr = NasmAddress::fromIl (pi->getParameter (), data_, bss_, stack);
+		PushNasmInstruction *push = new PushNasmInstruction (addr);
+		push->setComment (pi->toString ());
+		ilist.push_back (push);
+	}
+	else if (itype == ILI_CALL)
+	{
+		CallIlInstruction *ci = (CallIlInstruction *) instruction;
+		CallNasmInstruction *call = new CallNasmInstruction (ci->getFunction ());
+		ilist.push_back (call);
+	}
 	else
 	{
 		Error::internalError ("[x86-nasm] unknown intermediate language instruction");
@@ -761,6 +775,11 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 	std::ofstream assembly;
 	assembly.open (assembly_file, std::ios::out);
 
+	// Write header
+	assembly << "bits 32" << std::endl;
+	assembly << INDENT << "global " << ENTRY_POINT << std::endl;
+	assembly << INDENT << "extern printf" << std::endl << std::endl;
+
 	// Write symbols in data section
 	assembly << "section .data" << std::endl;
 	for (NasmDataMap::iterator it = data_.begin (); it != data_.end (); it ++)
@@ -779,7 +798,6 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 
 	// Start .text section
 	assembly << "section .text" << std::endl;
-	assembly << INDENT << "global " << ENTRY_POINT << std::endl << std::endl;
 
 	// TODO: Write internal subroutines
 
@@ -797,10 +815,11 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 
 	// Determine object file
 	std::string object_file = output_file + ".o";
+	std::string list_file = output_file + ".lst";
 
 	// Call NASM
 	std::string nasm_command =
-		"nasm -f aout -o " + object_file + " " + assembly_file;
+		"nasm -g -f elf32 -l " + list_file + " -o " + object_file + " " + assembly_file;
 	std::cout << "[x86-nasm] running assembler: " << nasm_command << std::endl;
 	int nasm_rc = system (nasm_command.c_str ());
 	if (nasm_rc != NO_ERROR)
@@ -811,7 +830,7 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 
 	// Call linker
 	std::string ld_command =
-		"ld -e " ENTRY_POINT " -o " + output_file + " -m elf_i386 " + object_file;
+		"ld -m elf_i386 -lc -dynamic-linker /usr/lib32/ld-linux.so.2 -L/usr/lib32 -e " ENTRY_POINT " -o " + output_file + " " + object_file;
 	std::cout << "[x86-nasm] running linker: " << ld_command << std::endl;
 	int ld_rc = system (ld_command.c_str ());
 	if (ld_rc != NO_ERROR)

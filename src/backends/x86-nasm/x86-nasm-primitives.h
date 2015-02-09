@@ -97,6 +97,7 @@ static std::string NasmRegisterAlias[] = { "eax", "ebx", "ecx", "edx", "esp", "e
 enum NasmAddressType
 {
 	ADDR_IMMEDIATE,
+	ADDR_IMMEDIATE_PTR,
 	ADDR_REGISTER,
 	ADDR_MEMORY_DIRECT,
 	ADDR_MEMORY_BASED
@@ -140,6 +141,21 @@ public:
 	bool isMemory () const { return false; }
 
 	unsigned int getData () { return data_; }
+};
+
+class ImmediatePtrNasmAddress : public NasmAddress
+{
+private:
+	std::string label_;
+	// Hidden constructor
+	ImmediatePtrNasmAddress ();
+
+public:
+	ImmediatePtrNasmAddress (std::string label) : label_ (label) { };
+
+	std::string toString () { return label_; };
+	NasmAddressType getAddressType () const { return ADDR_IMMEDIATE_PTR; }
+	bool isMemory () const { return false; }
 };
 
 class RegisterNasmAddress : public NasmAddress
@@ -219,7 +235,9 @@ enum NasmInstructionType
 	NI_TEST,
 	NI_JMP,
 	NI_JZ,
-	NI_JNZ
+	NI_JNZ,
+
+	NI_CALL
 };
 
 //
@@ -451,7 +469,7 @@ public:
 	PushNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
 	~PushNasmInstruction () { delete opr_; }
 
-	std::string toString () { return "push " + opr_->toString (); }
+	std::string toString () { return "push dword " + opr_->toString (); }
 	NasmInstructionType getInstructionType () const { return NI_PUSH; }
 };
 
@@ -465,7 +483,7 @@ public:
 	PopNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
 	~PopNasmInstruction () { if (opr_ != nullptr) delete opr_; }
 
-	std::string toString () { return "pop  " + (opr_ != nullptr ? opr_->toString () : ""); }
+	std::string toString () { return "pop  dword " + (opr_ != nullptr ? opr_->toString () : ""); }
 	NasmInstructionType getInstructionType () const { return NI_POP; }
 };
 
@@ -524,6 +542,20 @@ public:
 
 	std::string toString () { return "jnz  " + target_; }
 	NasmInstructionType getInstructionType () const { return NI_JNZ; }
+};
+
+class CallNasmInstruction : public NasmInstruction
+{
+protected:
+	// Routine to call
+	std::string function_;
+	// Hidden constructor
+	CallNasmInstruction () : function_ ("") { }
+public:
+	CallNasmInstruction (std::string function) : function_ (function) { }
+
+	std::string toString () { return "call " + function_; }
+	NasmInstructionType getInstructionType () const { return NI_CALL; }
 };
 
 #endif

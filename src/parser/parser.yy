@@ -74,6 +74,8 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %token PAR_OPEN					"("
 %token PLUS						"+"
 %token POWER					"^"
+%token PRINT
+%token SEMICOLON				";"
 %token SLASH					"/"
 %token STAR						"*"
 %token THEN
@@ -106,6 +108,8 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %type <expr_node>		operand
 %type <expr_node>		or_xor_op
 %type <expr_node>		plus_minus_op
+%type <expr_node>		print_expression_list
+%type <statement_node>	print_statement
 %type <expr_node>		power_op
 %type <statement_node>	statement
 %type <statement_node>	statement_list
@@ -174,6 +178,35 @@ statement
 			$$ = $1;
 		}
 	| if_statement
+		{
+			$$ = $1;
+		}
+	| print_statement
+		{
+			$$ = $1;
+		}
+	;
+
+print_statement
+	: PRINT print_expression_list
+		{
+			$$ = new PrintStatementNode ($2);
+			$$->setLocation (@1);
+		}
+	;
+
+print_expression_list
+	: expression COMMA print_expression_list
+		{
+			$$ = $1;
+			$$->setNext ($3);
+		}
+	| expression SEMICOLON print_expression_list
+		{
+			$$ = $1;
+			$$->setNext ($3);
+		}
+	| expression
 		{
 			$$ = $1;
 		}

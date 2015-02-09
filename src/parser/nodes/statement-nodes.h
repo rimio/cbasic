@@ -10,7 +10,8 @@ typedef enum
 	ST_ASSIGNMENT,
 	ST_ALLOCATION,
 	ST_WHILE,
-	ST_IF
+	ST_IF,
+	ST_PRINT
 } StatementType;
 
 //
@@ -20,9 +21,11 @@ class StatementNode : public ParserNode
 {
 protected:
 	// Hidden constructor
-	StatementNode () { };
+	StatementNode () { }
 
 public:
+	virtual ~StatementNode () { }
+
 	// Get statement type
 	virtual StatementType getStatementType () const = 0;
 
@@ -47,7 +50,7 @@ private:
 
 public:
 	AssignmentStatementNode (IdentifierNode *iden, ExpressionNode *expr) : identifier_ (iden), expression_ (expr) { }
-	virtual ~AssignmentStatementNode ();
+	~AssignmentStatementNode ();
 
 	IdentifierNode *getIdentifier () const { return identifier_; }
 	ExpressionNode *getExpression () const { return expression_; }
@@ -70,7 +73,7 @@ class AllocationStatementNode : public StatementNode
 {
 private:
 	// Hidden constructor
-	AllocationStatementNode () { };
+	AllocationStatementNode () { }
 
 	// Left hand side - identifier
 	IdentifierNode *identifier_;
@@ -79,8 +82,8 @@ private:
 	ParserNode *dimension_list_;
 
 public:
-	AllocationStatementNode (IdentifierNode *iden, ParserNode *dims) : identifier_ (iden), dimension_list_ (dims) { };
-	virtual ~AllocationStatementNode ();
+	AllocationStatementNode (IdentifierNode *iden, ParserNode *dims) : identifier_ (iden), dimension_list_ (dims) { }
+	~AllocationStatementNode ();
 
 	IdentifierNode *getIdentifier () const { return identifier_; }
 	ParserNode *getDimensionList () const { return dimension_list_; }
@@ -112,8 +115,8 @@ private:
 	ParserNode *statements_;
 
 public:
-	WhileStatementNode (ExpressionNode *cond, ParserNode *stmts) : condition_ (cond), statements_ (stmts) { };
-	virtual ~WhileStatementNode ();
+	WhileStatementNode (ExpressionNode *cond, ParserNode *stmts) : condition_ (cond), statements_ (stmts) { }
+	~WhileStatementNode ();
 
 	ExpressionNode *getCondition () const { return condition_; }
 	ParserNode *getStatements () const { return statements_; }
@@ -146,8 +149,8 @@ private:
 	ParserNode *else_;
 
 public:
-	IfStatementNode (ExpressionNode *cond, ParserNode *then, ParserNode *el) : condition_ (cond), then_ (then), else_ (el) { };
-	virtual ~IfStatementNode ();
+	IfStatementNode (ExpressionNode *cond, ParserNode *then, ParserNode *el) : condition_ (cond), then_ (then), else_ (el) { }
+	~IfStatementNode ();
 
 	ExpressionNode *getCondition () const { return condition_; }
 	ParserNode *getThen () const { return then_; }
@@ -162,6 +165,31 @@ public:
 	std::string print (std::string indent);
 	std::list<ParserNode *> getChildren () { return { condition_, then_, else_ }; }
 	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &condition_, &then_, &else_ }; }
+};
+
+//
+// PRINT statement
+//
+class PrintStatementNode : public StatementNode
+{
+protected:
+	ExpressionNode *list_;
+	// Hidden constructor
+	PrintStatementNode () { };
+
+public:
+	PrintStatementNode (ExpressionNode *list) : list_ (list) { }
+	~PrintStatementNode ();
+
+	// Implementations of StatementNode pure virtual functions
+	StatementType getStatementType () const { return ST_PRINT; }
+
+	// Implementations of ParserNode pure virtual functions
+	std::string toString ();
+	std::string print (std::string indent);
+	std::list<ParserNode *> getChildren () { return { list_ }; }
+	std::list<ParserNode **> getChildrenReferences () { return { (ParserNode **) &list_ }; }
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 };
 
 #endif

@@ -65,27 +65,34 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 		if (fret != bss.end ())
 		{
 			// Found in bss, no need to reallocate
-			return new MemoryDirectNasmAddress (name);
+			if (va->getType () != BT_STRING)
+			{
+				return new MemoryDirectNasmAddress (name);
+			}
+			else
+			{
+				return new ImmediatePtrNasmAddress (name);
+			}
 		}
 
 		// New bss entry
 		if (va->getType () == BT_INT || va->getType () == BT_FLOAT)
 		{
 			bd = new NasmBssDefinition (va->getSymbol ()->getName (), 4);
+			bss.insert ( { name, bd } );
+			return new MemoryDirectNasmAddress (name);
 		}
 		else if (va->getType () == BT_STRING)
 		{
 			bd = new NasmBssDefinition (va->getSymbol ()->getName (), 256);
+			bss.insert ( { name, bd } );
+			return new ImmediatePtrNasmAddress (name);
 		}
 		else
 		{
 			Error::internalError ("[x86-nasm] unknown variable type");
 			return nullptr;
 		}
-
-		// Add to bss
-		bss.insert ( { name, bd } );
-		return new MemoryDirectNasmAddress (name);
 	}
 	else if (atype == ILA_CONSTANT)
 	{
@@ -114,7 +121,7 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 				data.insert ( { ca, ddef } );
 			}
 
-			naddr = new MemoryDirectNasmAddress (ddef->getLabel ());
+			naddr = new ImmediatePtrNasmAddress (ddef->getLabel ());
 		}
 		else
 		{
@@ -131,6 +138,7 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 		if (fret != stack.end ())
 		{
 			// Found it!
+			assert (ta->getType () != BT_STRING);
 			naddr = new MemoryBasedNasmAddress (REG_EBP, (*fret).second.offset_);
 		}
 		else
@@ -143,20 +151,20 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 			{
 				offset = ssize + 4;
 				stack.emplace (ta->getName (), NasmStackDefinition (4, offset));
+				naddr = new MemoryBasedNasmAddress (REG_EBP, offset);
 			}
 			else if (ta->getType () == BT_STRING)
 			{
 				offset = ssize + 256;
 				stack.emplace (ta->getName (), NasmStackDefinition (256, offset));
+				naddr = nullptr;
+				assert (false);
 			}
 			else
 			{
 				Error::internalError ("[x86-nasm] unknown temporary type");
 				return nullptr;
 			}
-
-			// Get address
-			naddr = new MemoryBasedNasmAddress (REG_EBP, offset);
 		}
 	}
 	else

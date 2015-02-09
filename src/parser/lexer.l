@@ -26,6 +26,7 @@ location_.step();
 ")"								{ return Parser::token::PAR_CLOSE; }
 
 ","								{ return Parser::token::COMMA; }
+";"								{ return Parser::token::SEMICOLON; }
 
 "^"								{ return Parser::token::POWER; }
 "+"								{ return Parser::token::PLUS; }
@@ -61,6 +62,8 @@ location_.step();
 [Tt][Hh][Ee][Nn]				{ return Parser::token::THEN; }
 [Ee][Ll][Ss][Ee]				{ return Parser::token::ELSE; }
 [Ee][Nn][Dd][Ii][Ff]			{ return Parser::token::ENDIF; }
+
+[Pp][Rr][Ii][Nn][Tt]			{ return Parser::token::PRINT; }
 
 [0-9]+								{ yylval->ival = atoi (yytext); return Parser::token::ILITERAL; }
 [0][0-9a-fA-F]*[Hh]					{ yylval->ival = strtol (yytext, NULL, 16); return Parser::token::ILITERAL; }

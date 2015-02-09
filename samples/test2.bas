@@ -9,6 +9,8 @@ let b = a * 2.3
 let c = b / 2.6
 let d = b + c - a
 
+print "Ana are " , x% + y% ; " mere"
+
 let y% = 100
 while y%
 	let y% = y% - 1

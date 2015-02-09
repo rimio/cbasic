@@ -2,6 +2,7 @@
 #include "error/error.h"
 #include "ilang/il-instructions.h"
 #include <cassert>
+#include <list>
 
 AssignmentStatementNode::~AssignmentStatementNode ()
 {
@@ -228,4 +229,95 @@ std::string IfStatementNode::print (std::string indent)
 		this_stmt = this_stmt + next_->print (indent);
 	}
 	return this_stmt;
+}
+
+PrintStatementNode::~PrintStatementNode ()
+{
+	for (ParserNode *list = list_, *next = nullptr; list != nullptr; list = next)
+	{
+		next = list->getNext ();
+		delete list;
+	}
+}
+
+std::string PrintStatementNode::toString ()
+{
+	return "print";
+}
+
+std::string PrintStatementNode::print (std::string indent)
+{
+	std::string this_stmt = indent + "print ";
+	ExpressionNode *expr = list_;
+	while (expr != nullptr)
+	{
+		this_stmt += expr->print ("") + (expr->getNext () != nullptr ? ", " : "");
+		expr = (ExpressionNode *) expr->getNext ();
+	}
+
+	if (next_ != nullptr)
+	{
+		this_stmt = this_stmt + "\n" + next_->print (indent);
+	}
+	return this_stmt;
+}
+
+std::tuple<int, IlAddress *> PrintStatementNode::generateIlCode (IlBlock *block)
+{
+	std::string format_string = "";
+
+	// Make a list of all parameters
+	std::list<ExpressionNode *> expr_list;
+	for (ExpressionNode *e = list_; e != nullptr; e = (ExpressionNode *) e->getNext ())
+	{
+		expr_list.push_back (e);
+
+		switch (e->getType ())
+		{
+		case BT_INT:
+			format_string += "%d";
+			break;
+
+		case BT_FLOAT:
+			format_string += "%f";
+			break;
+
+		case BT_STRING:
+			format_string += "%s";
+			break;
+
+		default:
+			break;
+		}
+	}
+	format_string += "\n";
+
+	// Generate parameters from back to front
+	for (std::list<ExpressionNode *>::reverse_iterator it = expr_list.rbegin ();
+		 it != expr_list.rend (); it ++)
+	{
+		// Generate code for expression
+		std::tuple<int, IlAddress *> iret = (*it)->generateIlCode (block);
+		if (std::get<0>(iret) != NO_ERROR)
+		{
+			return std::make_tuple(ER_FAILED, nullptr);
+		}
+		assert (std::get<1>(iret) != nullptr);
+
+		// Insert parameter
+		ParamIlInstruction *param = new ParamIlInstruction (std::get<1> (iret));
+		block->addInstruction (param);
+	}
+
+	// Insert format parameter
+	ParamIlInstruction *param = new ParamIlInstruction (new ConstantIlAddress (format_string));
+	block->addInstruction (param);
+
+	// Generate call
+	CallIlInstruction *call = new CallIlInstruction ("printf");
+	block->addInstruction (call);
+
+	// All ok
+	// Do NOT return result address, this is a statement!
+	return std::make_tuple(NO_ERROR, nullptr);
 }

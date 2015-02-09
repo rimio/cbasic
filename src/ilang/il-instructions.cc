@@ -54,3 +54,13 @@ std::string JumpIlInstruction::toString ()
 		return "jumpto " + target_->getName ();
 	}
 }
+
+std::string ParamIlInstruction::toString ()
+{
+	return "param " + param_->toString ();
+}
+
+std::string CallIlInstruction::toString ()
+{
+	return "call " + function_;
+}
