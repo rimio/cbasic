@@ -115,10 +115,9 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			NasmInstruction *mov;
 
 			// TEST   op1?, 0xFFFFFFFF
+			// MOV    eax, 0x0
 			// MOV    ebx, 0xFFFFFFFF
 			// CMOVZ  eax, ebx
-			// MOV    ebx, 0x0
-			// CMOVNZ eax, ebx
 			// MOV    r?, eax
 			TestNasmInstruction *test = new TestNasmInstruction (
 						op1_addr,
@@ -126,6 +125,12 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 					);
 			test->setComment (instruction->toString ());
 			ilist.push_back (test);
+
+			mov = new MovNasmInstruction (
+						new RegisterNasmAddress (REG_EAX),
+						new ImmediateNasmAddress ((unsigned int) 0x0)
+					);
+			ilist.push_back (mov);
 
 			mov = new MovNasmInstruction (
 						new RegisterNasmAddress (REG_EBX),
@@ -137,19 +142,6 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 						new RegisterNasmAddress (REG_EAX),
 						new RegisterNasmAddress (REG_EBX),
 						"z"
-					);
-			ilist.push_back (mov);
-
-			mov = new MovNasmInstruction (
-						new RegisterNasmAddress (REG_EBX),
-						new ImmediateNasmAddress ((unsigned int) 0x0)
-					);
-			ilist.push_back (mov);
-
-			mov = new CmovxxNasmInstruction (
-						new RegisterNasmAddress (REG_EAX),
-						new RegisterNasmAddress (REG_EBX),
-						"nz"
 					);
 			ilist.push_back (mov);
 
