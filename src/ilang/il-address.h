@@ -21,6 +21,10 @@ enum IlAddressType
 class IlAddress
 {
 private:
+	// Hack for printf - push a float as a qword
+	bool push_as_qword_;
+
+	// Type
 	BasicType type_;
 
 	// REALLY hidden constructor
@@ -28,7 +32,7 @@ private:
 
 protected:
 	// Hidden constructor
-	IlAddress (BasicType ty) : type_ (ty) { };
+	IlAddress (BasicType ty) : type_ (ty), push_as_qword_ (false) { };
 
 public:
 	virtual ~IlAddress () { };
@@ -38,6 +42,10 @@ public:
 
 	// Get the type
 	virtual BasicType getType () const { return type_; }
+
+	// Hack continues!
+	bool getPushQword () const { return push_as_qword_; }
+	void setPushQword (bool v) { push_as_qword_ = v; }
 };
 
 //

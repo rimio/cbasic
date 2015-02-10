@@ -46,6 +46,9 @@ enum IlOperatorType
 #define IL_MAINTAIN_OPERAND_ORDER(op) \
 	((op) != ILOP_ADD && (op) != ILOP_MUL && (op) != ILOP_AND && (op) != ILOP_OR && (op) != ILOP_XOR)
 
+#define IL_IS_COMPARISON_OPERATOR(op) \
+	((op) == ILOP_GT || (op) == ILOP_GE || (op) == ILOP_LT || (op) == ILOP_LE || (op) == ILOP_EQ || (op) == ILOP_NE)
+
 //
 // IL operator aliases
 //
@@ -182,19 +185,18 @@ class CallIlInstruction : public IlInstruction
 {
 protected:
 	std::string function_;
-	unsigned int param_count_;
+	unsigned int params_size_;
 	// Hidden constructor
 	CallIlInstruction () { };
 public:
-	CallIlInstruction (std::string function, unsigned int param_count) :
-		function_ (function), param_count_ (param_count) { }
+	CallIlInstruction (std::string function, unsigned int params_size) : function_ (function), params_size_ (params_size) { }
 	~CallIlInstruction () { }
 
 	std::string toString ();
 	IlInstructionType getInstructionType () const { return ILI_CALL; };
 
 	std::string getFunction () const { return function_; }
-	unsigned int getParameterCount () const { return param_count_; }
+	unsigned int getParametersSize () const { return params_size_; }
 };
 
 #endif

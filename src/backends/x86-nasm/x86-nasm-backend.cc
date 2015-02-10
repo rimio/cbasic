@@ -61,11 +61,6 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 	{
 		return ER_FAILED;
 	}
-	if (r_iladdr->getType () != op1_iladdr->getType ())
-	{
-		Error::internalError ("[x86-nasm] result address type differs from operand1 address type");
-		return ER_FAILED;
-	}
 
 	//
 	// One operand case
@@ -129,11 +124,6 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 	{
 		return ER_FAILED;
 	}
-	if (r_iladdr->getType () != op2_iladdr->getType ())
-	{
-		Error::internalError ("[x86-nasm] result address type differs from operand2 address type");
-		return ER_FAILED;
-	}
 
 	//
 	// Two operand case
@@ -151,7 +141,11 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 		return NO_ERROR;
 	}
 
-	if (r_iladdr->getType () == BT_FLOAT)
+	if ((r_iladdr->getType () == BT_FLOAT)
+		|| (r_iladdr->getType () == BT_INT
+			&& op1_iladdr->getType () == BT_FLOAT
+			&& op2_iladdr->getType () == BT_FLOAT
+			&& IL_IS_COMPARISON_OPERATOR (op_type)))
 	{
 		bool push_op1 = false;
 		bool push_op2 = false;
@@ -195,6 +189,7 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 		//
 		// Execute operation
 		//
+		bool is_compare = false;
 		NasmInstruction *inst = nullptr;
 		switch (op_type)
 		{
@@ -214,6 +209,77 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			inst = new FdivNasmInstruction (i_op2_addr);
 			break;
 
+		case ILOP_GT:
+		case ILOP_GE:
+		case ILOP_LT:
+		case ILOP_LE:
+		case ILOP_EQ:
+		case ILOP_NE:
+			{
+				is_compare = true;
+
+				// Generate CMP instruction and pop ST0
+				FcompNasmInstruction *cmp = new FcompNasmInstruction (i_op2_addr);
+				ilist.push_back (cmp);
+
+				// Pull fpu registers
+				FstswNasmInstruction *fstsw = new FstswNasmInstruction (
+							new RegisterNasmAddress (REG_AX)
+						);
+				ilist.push_back (fstsw);
+
+				FwaitNasmInstruction *fwait = new FwaitNasmInstruction ();
+				ilist.push_back (fwait);
+
+				SahfNasmInstruction *sahf = new SahfNasmInstruction ();
+				ilist.push_back (sahf);
+
+				// Clear EAX
+				MovNasmInstruction *mov = new MovNasmInstruction (
+							new RegisterNasmAddress (REG_EAX),
+							new ImmediateNasmAddress ((unsigned int) 0)
+						);
+				ilist.push_back (mov);
+
+				// Move 0xFFFFFFFF (aka true) into ebx
+				// CMOVxx doesn't do immediates
+				mov = new MovNasmInstruction (
+							new RegisterNasmAddress (REG_EBX),
+							new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)
+						);
+				ilist.push_back (mov);
+
+				// Switch for each operator type
+				RegisterNasmAddress *eax = new RegisterNasmAddress (REG_EAX);
+				RegisterNasmAddress *ebx = new RegisterNasmAddress (REG_EBX);
+				switch (op_type)
+				{
+				case ILOP_GT:
+					inst = new CmovxxNasmInstruction (eax, ebx, "a");
+					break;
+				case ILOP_GE:
+					inst = new CmovxxNasmInstruction (eax, ebx, "ae");
+					break;
+				case ILOP_LT:
+					inst = new CmovxxNasmInstruction (eax, ebx, "b");
+					break;
+				case ILOP_LE:
+					inst = new CmovxxNasmInstruction (eax, ebx, "be");
+					break;
+				case ILOP_EQ:
+					inst = new CmovxxNasmInstruction (eax, ebx, "e");
+					break;
+				case ILOP_NE:
+					inst = new CmovxxNasmInstruction (eax, ebx, "ne");
+					break;
+
+				default:
+					assert (false);
+					return ER_FAILED;
+				}
+			}
+			break;
+
 		default:
 			Error::internalError ("invalid '" + IlOperatorAlias[op_type] + "' operator for floating point context");
 			return ER_FAILED;
@@ -225,28 +291,40 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 		//
 		// Get result
 		//
-		if (r_addr->isMemory ())
+		if (!is_compare)
 		{
-			// ST0 -> mem, pop ST0
-			FstpNasmInstruction *fstp = new FstpNasmInstruction (r_addr);
-			ilist.push_back (fstp);
+			if (r_addr->isMemory ())
+			{
+				// ST0 -> mem, pop ST0
+				FstpNasmInstruction *fstp = new FstpNasmInstruction (r_addr);
+				ilist.push_back (fstp);
+			}
+			else
+			{
+				// SUB  ESP, 4
+				// FSPT [ESP]
+				// POP  r
+				SubNasmInstruction *sub = new SubNasmInstruction (
+							new RegisterNasmAddress (REG_ESP),
+							new ImmediateNasmAddress ((unsigned int) 4)
+						);
+				ilist.push_back (sub);
+
+				FstpNasmInstruction *fstp = new FstpNasmInstruction (new MemoryBasedNasmAddress (REG_ESP, 0));
+				ilist.push_back (fstp);
+
+				PopNasmInstruction *pop = new PopNasmInstruction (r_addr);
+				ilist.push_back (pop);
+			}
 		}
 		else
 		{
-			// SUB  ESP, 4
-			// FSPT [ESP]
-			// POP  r
-			SubNasmInstruction *sub = new SubNasmInstruction (
-						new RegisterNasmAddress (REG_ESP),
-						new ImmediateNasmAddress ((unsigned int) 4)
+			// MOV r?, EAX
+			MovNasmInstruction *mov = new MovNasmInstruction (
+						r_addr,
+						new RegisterNasmAddress (REG_EAX)
 					);
-			ilist.push_back (sub);
-
-			FstpNasmInstruction *fstp = new FstpNasmInstruction (new MemoryBasedNasmAddress (REG_ESP, 0));
-			ilist.push_back (fstp);
-
-			PopNasmInstruction *pop = new PopNasmInstruction (r_addr);
-			ilist.push_back (pop);
+			ilist.push_back (mov);
 		}
 
 		//
@@ -657,7 +735,8 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 	}
 
 	// All ok
-	return NO_ERROR;
+	Error::internalError ("[x86-nasm] assignment instruction type did not qualify");
+	return ER_FAILED;
 }
 
 int X86NasmBackend::compileJumpInstruction (JumpIlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack)
@@ -733,19 +812,45 @@ int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstruct
 	{
 		ParamIlInstruction *pi = (ParamIlInstruction *) instruction;
 		NasmAddress *addr = NasmAddress::fromIl (pi->getParameter (), data_, bss_, stack);
-		PushNasmInstruction *push = new PushNasmInstruction (addr);
-		ilist.push_back (push);
+
+		if (pi->getParameter ()->getPushQword ())
+		{
+			// FLOAT and PRINTF, fatal combination
+			// Copy 32bit float to 64bit double on stack
+			SubNasmInstruction *ssub = new SubNasmInstruction (
+						new RegisterNasmAddress (REG_ESP),
+						new ImmediateNasmAddress ((unsigned int) 8)
+					);
+			ilist.push_back (ssub);
+
+			FldNasmInstruction *fld = new FldNasmInstruction (addr);
+			ilist.push_back (fld);
+
+			FstpNasmInstruction *fstp = new FstpNasmInstruction (
+					new MemoryBasedNasmAddress (REG_ESP, 0)
+					);
+			fstp->setQword ();
+			ilist.push_back (fstp);
+		}
+		else
+		{
+			// Normal case, push DWORD
+			PushNasmInstruction *push = new PushNasmInstruction (addr);
+			ilist.push_back (push);
+		}
 	}
 	else if (itype == ILI_CALL)
 	{
 		CallIlInstruction *ci = (CallIlInstruction *) instruction;
+
+		// Add call
 		CallNasmInstruction *call = new CallNasmInstruction (ci->getFunction ());
 		ilist.push_back (call);
 
 		// Pop parameters
 		AddNasmInstruction *add = new AddNasmInstruction (
 					new RegisterNasmAddress (REG_ESP),
-					new ImmediateNasmAddress ((unsigned int) ci->getParameterCount () * 4)
+					new ImmediateNasmAddress ((unsigned int) ci->getParametersSize ())
 				);
 		ilist.push_back (add);
 	}
@@ -811,9 +916,9 @@ void X86NasmBackend::printInstructionList (NasmInstructionList &ilist, std::ofst
 		std::string text = ((*it)->getInstructionType () != NI_LABEL ? INDENT : "") + (*it)->toString ();
 		if ((*it)->getComment ().compare ("") != 0)
 		{
-			if (text.length () < 30)
+			if (text.length () < 40)
 			{
-				text += std::string (30 - text.length (), ' ');
+				text += std::string (40 - text.length (), ' ');
 			}
 
 			// We have a comment, print it
@@ -844,8 +949,8 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 
 	// Write header
 	assembly << "bits 32" << std::endl;
-	assembly << INDENT << "global " << ENTRY_POINT << std::endl;
-	assembly << INDENT << "extern printf" << std::endl << std::endl;
+	assembly << "global " << ENTRY_POINT << std::endl;
+	assembly << "extern printf" << std::endl << std::endl;
 
 	// Write symbols in data section
 	assembly << "section .data" << std::endl;

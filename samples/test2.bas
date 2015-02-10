@@ -1,3 +1,15 @@
+let a = 1.5
+let b = 1.3
+
+print a, " + ", b, " = ", a + b
+
+print a, " < ", b, " = ", a < b
+print a, " > ", b, " = ", a > b
+print a, " <= ", b, " = ", a <= b
+print a, " >= ", b, " = ", a >= b
+print a, " == ", b, " = ", a = b
+print a, " != ", b, " = ", a <> b
+
 let count% = 0
 while count% < 12
 	if  count% mod 2 then

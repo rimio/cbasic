@@ -328,14 +328,14 @@ std::string PrintStatementNode::print (std::string indent)
 std::tuple<int, IlAddress *> PrintStatementNode::generateIlCode (IlBlock *block)
 {
 	std::string format_string = "";
-	unsigned int pcount = 0;
+	unsigned int psize = 0;
 
 	// Make a list of all parameters
 	std::list<ExpressionNode *> expr_list;
 	for (ExpressionNode *e = list_; e != nullptr; e = (ExpressionNode *) e->getNext ())
 	{
 		expr_list.push_back (e);
-		pcount ++;
+		psize += 4;
 
 		switch (e->getType ())
 		{
@@ -345,6 +345,7 @@ std::tuple<int, IlAddress *> PrintStatementNode::generateIlCode (IlBlock *block)
 
 		case BT_FLOAT:
 			format_string += "%f";
+			psize += 4;
 			break;
 
 		case BT_STRING:
@@ -367,7 +368,14 @@ std::tuple<int, IlAddress *> PrintStatementNode::generateIlCode (IlBlock *block)
 		{
 			return std::make_tuple(ER_FAILED, nullptr);
 		}
-		assert (std::get<1>(iret) != nullptr);
+		IlAddress *addr = std::get<1>(iret);
+		assert (addr != nullptr);
+
+		// HACK for printf
+		if (addr->getType () == BT_FLOAT)
+		{
+			addr->setPushQword (true);
+		}
 
 		// Insert parameter
 		ParamIlInstruction *param = new ParamIlInstruction (std::get<1> (iret));
@@ -379,7 +387,7 @@ std::tuple<int, IlAddress *> PrintStatementNode::generateIlCode (IlBlock *block)
 	block->addInstruction (param);
 
 	// Generate call
-	CallIlInstruction *call = new CallIlInstruction ("printf", pcount + 1);
+	CallIlInstruction *call = new CallIlInstruction ("printf", psize + 4);
 	block->addInstruction (call);
 
 	// All ok
