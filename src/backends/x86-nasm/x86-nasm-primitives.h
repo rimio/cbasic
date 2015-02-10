@@ -223,6 +223,10 @@ enum NasmInstructionType
 	NI_IMUL,
 	NI_IDIV,
 
+	NI_AND,
+	NI_OR,
+	NI_XOR,
+
 	NI_FADD,
 	NI_FSUB,
 	NI_FMUL,
@@ -375,6 +379,54 @@ public:
 
 	std::string toString () { return "idiv  dword " + opr_->toString (); }
 	NasmInstructionType getInstructionType () const { return NI_IDIV; }
+};
+
+class AndNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *dest_;
+	NasmAddress *opr_;
+	// Hidden constructor
+	AndNasmInstruction () { };
+
+public:
+	AndNasmInstruction (NasmAddress *dest, NasmAddress *opr) : dest_ (dest), opr_ (opr) { };
+	~AndNasmInstruction () { delete dest_; delete opr_; }
+
+	std::string toString () { return "and   " + dest_->toString () + ", " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_AND; }
+};
+
+class OrNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *dest_;
+	NasmAddress *opr_;
+	// Hidden constructor
+	OrNasmInstruction () { };
+
+public:
+	OrNasmInstruction (NasmAddress *dest, NasmAddress *opr) : dest_ (dest), opr_ (opr) { };
+	~OrNasmInstruction () { delete dest_; delete opr_; }
+
+	std::string toString () { return "or    " + dest_->toString () + ", " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_OR; }
+};
+
+class XorNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *dest_;
+	NasmAddress *opr_;
+	// Hidden constructor
+	XorNasmInstruction () { };
+
+public:
+	XorNasmInstruction (NasmAddress *dest, NasmAddress *opr) : dest_ (dest), opr_ (opr) { };
+	~XorNasmInstruction () { delete dest_; delete opr_; }
+
+	std::string toString () { return "xor   " + dest_->toString () + ", " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_XOR; }
 };
 
 class FaddNasmInstruction : public NasmInstruction

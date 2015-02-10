@@ -763,7 +763,96 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 		case ILOP_OR:
 		case ILOP_XOR:
 			{
-				// Dest is a register; move logical result to EAX
+				//
+				// The return value must be either 0 (false) or 0xFFFFFFFF (true)
+				//
+
+				// TEST   op1, 0xFFFFFFFF
+				// MOV    treg1, 0
+				// MOV    treg2, 0xFFFFFFFF
+				// CMOVNZ treg1, treg2        ; treg1 now holds boolean value of op1
+				TestNasmInstruction *test = new TestNasmInstruction (
+							i_dest_addr,
+							new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)
+						);
+				ilist.push_back (test);
+
+				// Find temp registers
+				RegisterNasmAddress *temp_reg1, *temp_reg2, *temp_reg3;
+				if (i_opr_addr->getAddressType() == ADDR_REGISTER)
+				{
+					RegisterNasmAddress *o_reg = (RegisterNasmAddress *) i_opr_addr;
+
+					if (o_reg->getRegister () == REG_EAX)
+					{
+						temp_reg1 = new RegisterNasmAddress (REG_EBX);
+						temp_reg2 = new RegisterNasmAddress (REG_ECX);
+						temp_reg3 = new RegisterNasmAddress (REG_EDX);
+					}
+					else if (o_reg->getRegister () == REG_EBX)
+					{
+						temp_reg1 = new RegisterNasmAddress (REG_EAX);
+						temp_reg2 = new RegisterNasmAddress (REG_ECX);
+						temp_reg3 = new RegisterNasmAddress (REG_EDX);
+					}
+					else if (o_reg->getRegister () == REG_ECX)
+					{
+						temp_reg1 = new RegisterNasmAddress (REG_EAX);
+						temp_reg2 = new RegisterNasmAddress (REG_EBX);
+						temp_reg3 = new RegisterNasmAddress (REG_EDX);
+					}
+					else
+					{
+						temp_reg1 = new RegisterNasmAddress (REG_EAX);
+						temp_reg2 = new RegisterNasmAddress (REG_EBX);
+						temp_reg3 = new RegisterNasmAddress (REG_ECX);
+					}
+				}
+				else
+				{
+					temp_reg1 = new RegisterNasmAddress (REG_EAX);
+					temp_reg2 = new RegisterNasmAddress (REG_EBX);
+					temp_reg3 = new RegisterNasmAddress (REG_ECX);
+				}
+
+				ilist.push_back (new MovNasmInstruction (temp_reg1, new ImmediateNasmAddress ((unsigned int) 0x0)));
+				ilist.push_back (new MovNasmInstruction (temp_reg2, new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)));
+				ilist.push_back (new CmovxxNasmInstruction (temp_reg1, temp_reg2, "nz"));
+
+				// Result will be in temp_1
+				i_dest_addr = new RegisterNasmAddress (temp_reg1->getRegister ());
+
+				switch (op_type)
+				{
+				case ILOP_AND:
+					// AND    treg1, op2      ; treg1 now holds either 0 (false) or some positive number (true)
+					// CMOVNZ treg1, treg2    ; normalize treg1 to either 0 or 0xFFFFFFFF
+					ilist.push_back (new AndNasmInstruction (temp_reg1, i_opr_addr));
+					inst = new CmovxxNasmInstruction (temp_reg1, temp_reg2, "nz");
+					break;
+
+				case ILOP_OR:
+					// OR     treg1, op2      ; treg1 now holds either 0 (false) or some positive number (true)
+					// CMOVNZ treg1, treg2    ; normalize treg1 to either 0 or 0xFFFFFFFF
+					ilist.push_back (new OrNasmInstruction (temp_reg1, i_opr_addr));
+					inst = new CmovxxNasmInstruction (temp_reg1, temp_reg2, "nz");
+					break;
+
+				case ILOP_XOR:
+					// MOV    treg3, 0x0
+					// TEST   op2, 0xFFFFFFFF
+					// CMOVNZ treg3, treg2
+					// XOR    treg1, treg3    ; treg1 now holds result
+					ilist.push_back (new MovNasmInstruction (temp_reg3, new ImmediateNasmAddress ((unsigned int) 0x0)));
+					test = new TestNasmInstruction (
+								i_opr_addr,
+								new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)
+							);
+					ilist.push_back (test);
+					ilist.push_back (new CmovxxNasmInstruction (temp_reg3, temp_reg2, "nz"));
+					inst = new XorNasmInstruction (temp_reg1, temp_reg3);
+					break;
+				}
 			}
 			break;
 
