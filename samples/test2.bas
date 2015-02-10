@@ -1,3 +1,9 @@
+let x% = 22
+let y% = 0
+
+print x%, " ", not x%
+print y%, " ", not y%
+
 let a = 1.5
 let b = 1.3
 

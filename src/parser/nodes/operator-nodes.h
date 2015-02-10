@@ -130,6 +130,7 @@ protected:
 
 public:
 	int inferType ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 };
 
 //

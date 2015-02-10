@@ -149,7 +149,7 @@ public:
 	JumpIlInstruction (LabelIlInstruction *target, IlAddress *condition) :
 		condition_ (condition), target_ (target), negate_ (false) { }
 	JumpIlInstruction (LabelIlInstruction *target, IlAddress *condition, bool negate) :
-		condition_ (condition), target_ (target), negate_ (negate_) { }
+		condition_ (condition), target_ (target), negate_ (negate) { }
 
 	std::string toString ();
 	IlInstructionType getInstructionType () const { return ILI_JUMP; }

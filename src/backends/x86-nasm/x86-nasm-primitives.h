@@ -238,8 +238,7 @@ enum NasmInstructionType
 	NI_TEST,
 	NI_CMP,
 	NI_JMP,
-	NI_JZ,
-	NI_JNZ,
+	NI_JXX,
 	NI_SETXX,
 	NI_CMOVXX,
 
@@ -560,32 +559,19 @@ public:
 	NasmInstructionType getInstructionType () const { return NI_JMP; }
 };
 
-class JzNasmInstruction : public NasmInstruction
+class JxxNasmInstruction : public NasmInstruction
 {
 private:
 	std::string target_;
+	std::string suffix_;
 	// Hidden constructor
-	JzNasmInstruction () { }
+	JxxNasmInstruction () { }
 
 public:
-	JzNasmInstruction (std::string target) : target_ (target) { };
+	JxxNasmInstruction (std::string target, std::string suffix) : target_ (target), suffix_ (suffix) { };
 
-	std::string toString () { return "jz    " + target_; }
-	NasmInstructionType getInstructionType () const { return NI_JZ; }
-};
-
-class JnzNasmInstruction : public NasmInstruction
-{
-private:
-	std::string target_;
-	// Hidden constructor
-	JnzNasmInstruction () { }
-
-public:
-	JnzNasmInstruction (std::string target) : target_ (target) { };
-
-	std::string toString () { return "jnz   " + target_; }
-	NasmInstructionType getInstructionType () const { return NI_JNZ; }
+	std::string toString () { return "j" + suffix_ + " " + target_; }
+	NasmInstructionType getInstructionType () const { return NI_JXX; }
 };
 
 class SetxxNasmInstruction : public NasmInstruction

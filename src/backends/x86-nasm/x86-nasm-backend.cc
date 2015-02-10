@@ -105,8 +105,59 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 		}
 		else if (op_type == ILOP_NOT)
 		{
-			// TODO: negation
-			assert (false);
+			// Only ints
+			if (op1_iladdr->getType () != BT_INT)
+			{
+				Error::internalError ("[x86-nasm] NOT operand is not integer");
+				return ER_FAILED;
+			}
+
+			NasmInstruction *mov;
+
+			// TEST   op1?, 0xFFFFFFFF
+			// MOV    ebx, 0xFFFFFFFF
+			// CMOVZ  eax, ebx
+			// MOV    ebx, 0x0
+			// CMOVNZ eax, ebx
+			// MOV    r?, eax
+			TestNasmInstruction *test = new TestNasmInstruction (
+						op1_addr,
+						new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)
+					);
+			test->setComment (instruction->toString ());
+			ilist.push_back (test);
+
+			mov = new MovNasmInstruction (
+						new RegisterNasmAddress (REG_EBX),
+						new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)
+					);
+			ilist.push_back (mov);
+
+			mov = new CmovxxNasmInstruction (
+						new RegisterNasmAddress (REG_EAX),
+						new RegisterNasmAddress (REG_EBX),
+						"z"
+					);
+			ilist.push_back (mov);
+
+			mov = new MovNasmInstruction (
+						new RegisterNasmAddress (REG_EBX),
+						new ImmediateNasmAddress ((unsigned int) 0x0)
+					);
+			ilist.push_back (mov);
+
+			mov = new CmovxxNasmInstruction (
+						new RegisterNasmAddress (REG_EAX),
+						new RegisterNasmAddress (REG_EBX),
+						"nz"
+					);
+			ilist.push_back (mov);
+
+			mov = new MovNasmInstruction (
+						r_addr,
+						new RegisterNasmAddress (REG_EAX)
+					);
+			ilist.push_back (mov);
 		}
 		else
 		{
@@ -716,6 +767,14 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			}
 			break;
 
+		case ILOP_AND:
+		case ILOP_OR:
+		case ILOP_XOR:
+			{
+				// Dest is a register; move logical result to EAX
+			}
+			break;
+
 		default:
 			Error::internalError ("[x86-nasm] invalid operator '" + IlOperatorAlias[op_type] + "' for integer arithmetic op");
 			return ER_FAILED;
@@ -770,11 +829,11 @@ int X86NasmBackend::compileJumpInstruction (JumpIlInstruction *instruction, Nasm
 		NasmInstruction *jump = nullptr;
 		if (instruction->negateCondition ())
 		{
-			jump = new JzNasmInstruction (target->getName ());
+			jump = new JxxNasmInstruction (target->getName (), "z");
 		}
 		else
 		{
-			jump = new JnzNasmInstruction (target->getName ());
+			jump = new JxxNasmInstruction (target->getName (), "nz");
 		}
 		ilist.push_back (jump);
 	}

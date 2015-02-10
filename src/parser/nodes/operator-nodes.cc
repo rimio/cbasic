@@ -254,6 +254,49 @@ int LogicalOperatorNode::inferType ()
 	return rc;
 }
 
+std::tuple<int, IlAddress *> LogicalOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+
+	// Determine operator
+	IlOperatorType ilop_type;
+	switch (getOperatorType ())
+	{
+	case OT_AND:
+		ilop_type = ILOP_AND;
+		break;
+
+	case OT_OR:
+		ilop_type = ILOP_OR;
+		break;
+
+	case OT_XOR:
+		ilop_type = ILOP_XOR;
+		break;
+
+	case OT_NOT:
+		ilop_type = ILOP_NOT;
+		break;
+
+	default:
+		assert (false);
+		ilop_type = ILOP_NONE;
+		break;
+	}
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), std::get<2>(ret), ilop_type);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
+}
+
 std::string PlusOperatorNode::toString ()
 {
 	return std::string ("+");
