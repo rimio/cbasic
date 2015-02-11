@@ -23,3 +23,20 @@ Currently supported syntax and features:
 * if-then-else block (```IF condition THEN [...] ELSE [...] ENDIF```)
 * loop statement (```WHILE condtion [...] WEND```)
 * print statement (```PRINT expr [, expr ...]```)
+
+##### Sample usages
+
+To compile the sample program ```fibo.bas``:
+```
+cbasic -o fibo samples/fibo.bas
+```
+
+To compile and print the AST and the program after semantic analysis:
+```
+cbasic -V 10 -o fibo samples/fibo.bas
+```
+
+To compile and print the program after semantic analysis and the intermediate language program:
+```
+cbasic -V 24 -o fibo samples/fibo.bas
+```
