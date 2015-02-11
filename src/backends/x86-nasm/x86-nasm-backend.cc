@@ -80,11 +80,11 @@ void X86NasmBackend::generateInternalFunctions (NasmInstructionList &ilist)
 
 	ilist.push_back (new LabelNasmInstruction ("_str_concat_copy_s2"));
 	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_AL), new MemoryBasedNasmAddress (REG_EDX, 0)));
+	ilist.push_back (new MovNasmInstruction (new MemoryBasedNasmAddress (REG_EBX, 0), new RegisterNasmAddress (REG_AL)));
 	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AL), new RegisterNasmAddress (REG_AL)));
 	ilist.push_back (new JxxNasmInstruction ("_str_concat_done", "z"));
 	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AH), new RegisterNasmAddress (REG_AH)));
 	ilist.push_back (new JxxNasmInstruction ("_str_concat_done", "z"));
-	ilist.push_back (new MovNasmInstruction (new MemoryBasedNasmAddress (REG_EBX, 0), new RegisterNasmAddress (REG_AL)));
 	ilist.push_back (new DecNasmInstruction (new RegisterNasmAddress (REG_AH)));
 	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_EBX)));
 	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_EDX)));
@@ -93,6 +93,32 @@ void X86NasmBackend::generateInternalFunctions (NasmInstructionList &ilist)
 	ilist.push_back (new LabelNasmInstruction ("_str_concat_done"));
 	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x0)));
 	ilist.push_back (new MovNasmInstruction (new MemoryBasedNasmAddress (REG_EBX, 0), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new RetNasmInstruction ());
+
+
+	//
+	// String comparison
+	//  EBX holds str1 pointer
+	//  ECX holds str2 pointer
+	//  Return in EAX: 3 if str1 < str2; 2 if str1 == str2; 1 if str1 > str2
+	//
+	ilist.push_back (new LabelNasmInstruction ("_str_compare"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_AL), new MemoryBasedNasmAddress (REG_EBX, 0)));
+	ilist.push_back (new CmpNasmInstruction (new RegisterNasmAddress (REG_AL), new MemoryBasedNasmAddress (REG_ECX, 0)));
+	ilist.push_back (new JxxNasmInstruction ("_str_compare_s2_larger", "l"));
+	ilist.push_back (new JxxNasmInstruction ("_str_compare_s1_larger", "g"));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_EBX)));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_ECX)));
+	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AL), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new JxxNasmInstruction ("_str_compare", "nz"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x2)));
+	ilist.push_back (new RetNasmInstruction ());
+
+	ilist.push_back (new LabelNasmInstruction ("_str_compare_s1_larger"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x1)));
+	ilist.push_back (new RetNasmInstruction ());
+	ilist.push_back (new LabelNasmInstruction ("_str_compare_s2_larger"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x3)));
 	ilist.push_back (new RetNasmInstruction ());
 }
 
@@ -254,7 +280,11 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 	//
 	// Two operand case
 	//
-	if (r_iladdr->getType () == BT_STRING)
+	if ((r_iladdr->getType () == BT_STRING)
+		|| (r_iladdr->getType () == BT_INT
+			&& op1_iladdr->getType () == BT_STRING
+			&& op2_iladdr->getType () == BT_STRING
+			&& IL_IS_COMPARISON_OPERATOR (op_type)))
 	{
 		switch (op_type)
 		{
@@ -271,6 +301,75 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 				unrollMemoryBasedAddress (s1, ilist, new RegisterNasmAddress (REG_ECX));
 				unrollMemoryBasedAddress (s2, ilist, new RegisterNasmAddress (REG_EDX));
 				ilist.push_back (new CallNasmInstruction ("_str_concat"));
+			}
+			break;
+
+		case ILOP_GT:
+		case ILOP_GE:
+		case ILOP_LT:
+		case ILOP_LE:
+		case ILOP_EQ:
+		case ILOP_NE:
+			{
+				AssignmentIlInstruction *as = (AssignmentIlInstruction *) instruction;
+				NasmAddress *dest = NasmAddress::fromIl (as->getResult (), data_, bss_, stack);
+				NasmAddress *s1 = NasmAddress::fromIl (as->getOperand1 (), data_, bss_, stack);
+				NasmAddress *s2 = NasmAddress::fromIl (as->getOperand2 (), data_, bss_, stack);
+				assert (dest != nullptr && s1 != nullptr && s2 != nullptr);
+
+				// Unroll string addresses
+				unrollMemoryBasedAddress (s1, ilist, new RegisterNasmAddress (REG_EBX));
+				unrollMemoryBasedAddress (s2, ilist, new RegisterNasmAddress (REG_ECX));
+
+				// Call comparison routine
+				ilist.push_back (new CallNasmInstruction ("_str_compare"));
+
+				// Put false in EBX and true in ECX
+				ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EBX), new ImmediateNasmAddress ((unsigned int) 0x0)));
+				ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_ECX), new ImmediateNasmAddress ((unsigned int) 0xFFFFFFFF)));
+
+				// Evaluate
+				switch (op_type)
+				{
+				case ILOP_GT:
+					ilist.push_back (new CmpNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x1)));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_EBX), "ne"));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_ECX), "e"));
+					break;
+
+				case ILOP_GE:
+					ilist.push_back (new CmpNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x2)));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_EBX), "g"));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_ECX), "le"));
+					break;
+
+				case ILOP_LT:
+					ilist.push_back (new CmpNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x3)));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_EBX), "ne"));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_ECX), "e"));
+					break;
+
+				case ILOP_LE:
+					ilist.push_back (new CmpNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x2)));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_EBX), "l"));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_ECX), "ge"));
+					break;
+
+				case ILOP_EQ:
+					ilist.push_back (new CmpNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x2)));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_EBX), "ne"));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_ECX), "e"));
+					break;
+
+				case ILOP_NE:
+					ilist.push_back (new CmpNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x2)));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_EBX), "e"));
+					ilist.push_back (new CmovxxNasmInstruction (new RegisterNasmAddress (REG_EAX), new RegisterNasmAddress (REG_ECX), "ne"));
+					break;
+				}
+
+				// Move result
+				ilist.push_back (new MovNasmInstruction (dest, new RegisterNasmAddress (REG_EAX)));
 			}
 			break;
 
