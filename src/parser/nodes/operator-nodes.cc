@@ -663,3 +663,20 @@ CastOperatorNode::CastOperatorNode (ExpressionNode *l, BasicType ttype) : Operat
 	// Save location of expression as this node's location
 	setLocation (l->getLocation ());
 }
+
+std::tuple<int, IlAddress *> CastOperatorNode::generateIlCode (IlBlock *block)
+{
+	std::tuple <int, IlAddress *, IlAddress *> ret = generateLeftRight (block);
+	if (std::get<0>(ret) != NO_ERROR)
+	{
+		return std::make_tuple (ER_FAILED, nullptr);
+	}
+	assert (std::get<1>(ret) != nullptr);
+
+	TemporaryIlAddress *ra = new TemporaryIlAddress (getType ());
+	AssignmentIlInstruction *ai =
+		new AssignmentIlInstruction (ra, std::get<1>(ret), nullptr, ILOP_CAST);
+	block->addInstruction (ai);
+
+	return std::make_tuple (NO_ERROR, ra);
+}

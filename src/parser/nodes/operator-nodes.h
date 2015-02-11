@@ -362,6 +362,7 @@ public:
 
 	// Nothing to infer
 	int inferType ();
+	std::tuple<int, IlAddress *> generateIlCode (IlBlock *block);
 };
 
 

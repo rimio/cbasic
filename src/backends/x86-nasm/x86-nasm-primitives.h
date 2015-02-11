@@ -240,7 +240,9 @@ enum NasmInstructionType
 	NI_FCOMP,
 
 	NI_FLD,
+	NI_FILD,
 	NI_FSTP,
+	NI_FISTP,
 
 	NI_PUSH,
 	NI_POP,
@@ -554,6 +556,21 @@ public:
 	NasmInstructionType getInstructionType () const { return NI_FLD; }
 };
 
+class FildNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	// Hidden constructor
+	FildNasmInstruction () { };
+
+public:
+	FildNasmInstruction (NasmAddress *opr) : opr_ (opr) { };
+	~FildNasmInstruction () { delete opr_; }
+
+	std::string toString () { return "fild  dword " + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FILD; }
+};
+
 class FstpNasmInstruction : public NasmInstruction
 {
 private:
@@ -567,6 +584,25 @@ public:
 	~FstpNasmInstruction () { delete opr_; }
 
 	std::string toString () { return (is_qword_ ? "fstp  qword " : "fstp  dword ") + opr_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_FSTP; }
+
+	void setQword () { is_qword_ = true; }
+	void setDword () { is_qword_ = false; }
+};
+
+class FistpNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *opr_;
+	bool is_qword_;
+	// Hidden constructor
+	FistpNasmInstruction () { };
+
+public:
+	FistpNasmInstruction (NasmAddress *opr) : opr_ (opr), is_qword_ (false) { };
+	~FistpNasmInstruction () { delete opr_; }
+
+	std::string toString () { return (is_qword_ ? "fistp qword " : "fistp dword ") + opr_->toString (); }
 	NasmInstructionType getInstructionType () const { return NI_FSTP; }
 
 	void setQword () { is_qword_ = true; }

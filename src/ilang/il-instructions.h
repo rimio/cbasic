@@ -56,7 +56,7 @@ static std::string IlOperatorAlias[] = {
 		"none",
 		"+", "-", "*", "/", "%",
 		"gt", "lt", "ge", "le", "eq", "ne",
-		"not", "and", "or", "xor"
+		"not", "and", "or", "xor",
 		"cast"
 };
 

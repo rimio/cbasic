@@ -264,6 +264,34 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 					);
 			ilist.push_back (mov);
 		}
+		else if (op_type == ILOP_CAST)
+		{
+			if (r_iladdr->getType () == BT_STRING || op1_iladdr->getType () == BT_STRING)
+			{
+				Error::internalError ("[x86-nasm] string CAST attempted");
+				return ER_FAILED;
+			}
+
+			NasmAddress *r_addr = NasmAddress::fromIl (r_iladdr, data_, bss_, stack);
+			NasmAddress *op_addr = NasmAddress::fromIl (op1_iladdr, data_, bss_, stack);
+
+			if (r_iladdr->getType () == BT_INT
+				&& op1_iladdr->getType() == BT_FLOAT)
+			{
+				ilist.push_back (new PushNasmInstruction (op_addr));
+				ilist.push_back (new FldNasmInstruction (new MemoryBasedNasmAddress (REG_ESP, 0)));
+				ilist.push_back (new FistpNasmInstruction (new MemoryBasedNasmAddress (REG_ESP, 0)));
+				ilist.push_back (new PopNasmInstruction (r_addr));
+			}
+			else if (r_iladdr->getType () == BT_FLOAT
+					 && op1_iladdr->getType() == BT_INT)
+			{
+				ilist.push_back (new PushNasmInstruction (op_addr));
+				ilist.push_back (new FildNasmInstruction (new MemoryBasedNasmAddress (REG_ESP, 0)));
+				ilist.push_back (new FstpNasmInstruction (new MemoryBasedNasmAddress (REG_ESP, 0)));
+				ilist.push_back (new PopNasmInstruction (r_addr));
+			}
+		}
 		else
 		{
 			Error::internalError ("[x86-nasm] invalid single-operand instruction '" + IlOperatorAlias[op_type] + "'");
