@@ -26,7 +26,7 @@ Currently supported syntax and features:
 
 ##### Sample usages
 
-To compile the sample program ```fibo.bas``:
+To compile the sample program ```fibo.bas```:
 ```
 cbasic -o fibo samples/fibo.bas
 ```
