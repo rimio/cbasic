@@ -24,7 +24,7 @@ Currently supported syntax and features:
 * loop statement (```WHILE condtion [...] WEND```)
 * print statement (```PRINT expr [, expr ...]```)
 
-##### Sample usages
+##### Debug tools and sample usages
 
 To compile the sample program ```fibo.bas```:
 ```
@@ -40,3 +40,5 @@ To compile and print the program after semantic analysis and the intermediate la
 ```
 cbasic -V 24 -o fibo samples/fibo.bas
 ```
+
+You can inspect the output assembly code (which is the input of NASM) in the ```fibo.asm``` file.
