@@ -78,6 +78,7 @@ public:
 enum NasmRegister
 {
 	REG_AL,
+	REG_AH,
 	REG_AX,
 	REG_EAX,
 	REG_EBX,
@@ -91,7 +92,7 @@ enum NasmRegister
 	REG_ST1
 };
 
-static std::string NasmRegisterAlias[] = { "al", "ax", "eax", "ebx", "ecx", "edx", "esp", "ebp", "st0", "st1" };
+static std::string NasmRegisterAlias[] = { "al", "ah", "ax", "eax", "ebx", "ecx", "edx", "esp", "ebp", "st0", "st1" };
 
 //
 // Data locations
@@ -206,6 +207,9 @@ public:
 	std::string toString () { return "[" + NasmRegisterAlias[reg_] + (offset_ >= 0 ? "+" : "") + std::to_string (offset_) + "]"; }
 	NasmAddressType getAddressType () const { return ADDR_MEMORY_BASED; }
 	bool isMemory () const { return true; }
+
+	NasmRegister getRegister () const { return reg_; }
+	unsigned int getOffset () const { return offset_; }
 };
 
 //
@@ -216,6 +220,8 @@ enum NasmInstructionType
 	NI_LABEL,			// Just a label, it does nothing
 
 	NI_INT,
+	NI_INC,
+	NI_DEC,
 	NI_MOV,
 
 	NI_ADD,
@@ -249,6 +255,7 @@ enum NasmInstructionType
 	NI_FSTSW,
 	NI_SAHF,
 	NI_FWAIT,
+	NI_RET,
 
 	NI_CALL
 };
@@ -301,6 +308,34 @@ public:
 
 	std::string toString () { return "int   " + std::to_string (interrupt_); }
 	NasmInstructionType getInstructionType () const { return NI_INT; }
+};
+
+class IncNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *op_;
+	// Hidden constructor
+	IncNasmInstruction () { };
+public:
+	IncNasmInstruction (NasmAddress *op) : op_ (op) { };
+	~IncNasmInstruction () { delete op_; }
+
+	std::string toString () { return "inc   " + op_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_INC; }
+};
+
+class DecNasmInstruction : public NasmInstruction
+{
+private:
+	NasmAddress *op_;
+	// Hidden constructor
+	DecNasmInstruction () { };
+public:
+	DecNasmInstruction (NasmAddress *op) : op_ (op) { };
+	~DecNasmInstruction () { delete op_; }
+
+	std::string toString () { return "dec   " + op_->toString (); }
+	NasmInstructionType getInstructionType () const { return NI_DEC; }
 };
 
 class MovNasmInstruction : public NasmInstruction
@@ -688,7 +723,16 @@ public:
 	FwaitNasmInstruction () { };
 
 	std::string toString () { return "fwait"; }
-	NasmInstructionType getInstructionType () const { return NI_SAHF; }
+	NasmInstructionType getInstructionType () const { return NI_FWAIT; }
+};
+
+class RetNasmInstruction : public NasmInstruction
+{
+public:
+	RetNasmInstruction () { };
+
+	std::string toString () { return "ret"; }
+	NasmInstructionType getInstructionType () const { return NI_RET; }
 };
 
 class CallNasmInstruction : public NasmInstruction

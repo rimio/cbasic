@@ -34,6 +34,82 @@ X86NasmBackend::X86NasmBackend ()
 	program_exit_.push_back (ins);
 }
 
+void X86NasmBackend::generateInternalFunctions (NasmInstructionList &ilist)
+{
+	//
+	//  Since we know what we are doing, we are not going to create a frame :)
+	//
+
+	//
+	// String copy
+	//  EBX holds destination pointer
+	//  ECX holds source pointer
+	//
+	ilist.push_back (new LabelNasmInstruction ("_str_copy"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_AL), new MemoryBasedNasmAddress (REG_ECX, 0)));
+	ilist.push_back (new MovNasmInstruction (new MemoryBasedNasmAddress (REG_EBX, 0), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_EBX)));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_ECX)));
+	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AL), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new JxxNasmInstruction ("_str_copy", "nz"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x0)));
+	ilist.push_back (new RetNasmInstruction ());
+
+
+	//
+	// String concatenation
+	//  EBX holds destination pointer
+	//  ECX holds str1 pointer
+	//  EDX holds str2 pointer
+	//  No return type
+	//
+	ilist.push_back (new LabelNasmInstruction ("_str_concat"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0xFF00)));
+
+	ilist.push_back (new LabelNasmInstruction ("_str_concat_copy_s1"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_AL), new MemoryBasedNasmAddress (REG_ECX, 0)));
+	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AL), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new JxxNasmInstruction ("_str_concat_copy_s2", "z"));
+	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AH), new RegisterNasmAddress (REG_AH)));
+	ilist.push_back (new JxxNasmInstruction ("_str_concat_done", "z"));
+	ilist.push_back (new MovNasmInstruction (new MemoryBasedNasmAddress (REG_EBX, 0), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new DecNasmInstruction (new RegisterNasmAddress (REG_AH)));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_EBX)));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_ECX)));
+	ilist.push_back (new JmpNasmInstruction ("_str_concat_copy_s1"));
+
+	ilist.push_back (new LabelNasmInstruction ("_str_concat_copy_s2"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_AL), new MemoryBasedNasmAddress (REG_EDX, 0)));
+	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AL), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new JxxNasmInstruction ("_str_concat_done", "z"));
+	ilist.push_back (new TestNasmInstruction (new RegisterNasmAddress (REG_AH), new RegisterNasmAddress (REG_AH)));
+	ilist.push_back (new JxxNasmInstruction ("_str_concat_done", "z"));
+	ilist.push_back (new MovNasmInstruction (new MemoryBasedNasmAddress (REG_EBX, 0), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new DecNasmInstruction (new RegisterNasmAddress (REG_AH)));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_EBX)));
+	ilist.push_back (new IncNasmInstruction (new RegisterNasmAddress (REG_EDX)));
+	ilist.push_back (new JmpNasmInstruction ("_str_concat_copy_s2"));
+
+	ilist.push_back (new LabelNasmInstruction ("_str_concat_done"));
+	ilist.push_back (new MovNasmInstruction (new RegisterNasmAddress (REG_EAX), new ImmediateNasmAddress ((unsigned int) 0x0)));
+	ilist.push_back (new MovNasmInstruction (new MemoryBasedNasmAddress (REG_EBX, 0), new RegisterNasmAddress (REG_AL)));
+	ilist.push_back (new RetNasmInstruction ());
+}
+
+void X86NasmBackend::unrollMemoryBasedAddress (NasmAddress *address, NasmInstructionList &ilist, NasmAddress *dest)
+{
+	if (address->getAddressType () == ADDR_MEMORY_BASED)
+	{
+		MemoryBasedNasmAddress *mb = (MemoryBasedNasmAddress *) address;
+		ilist.push_back (new MovNasmInstruction (dest, new RegisterNasmAddress (mb->getRegister ())));
+		ilist.push_back (new AddNasmInstruction (dest, new ImmediateNasmAddress (mb->getOffset ())));
+	}
+	else
+	{
+		ilist.push_back (new MovNasmInstruction (dest, address));
+	}
+}
+
 int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack)
 {
 	IlAddress *r_iladdr = instruction->getResult ();
@@ -72,8 +148,19 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 			// Simple assignment
 			if (r_iladdr->getType () == BT_STRING)
 			{
-				// TODO: string case, call copy subroutine
-				assert (false);
+				AssignmentIlInstruction *as = (AssignmentIlInstruction *) instruction;
+				NasmAddress *dest = NasmAddress::fromIl (as->getResult (), data_, bss_, stack);
+				NasmAddress *src = NasmAddress::fromIl (as->getOperand1 (), data_, bss_, stack);
+				assert (dest != nullptr && src != nullptr);
+
+				// Unroll string addresses
+				unrollMemoryBasedAddress (dest, ilist, new RegisterNasmAddress (REG_EBX));
+				unrollMemoryBasedAddress (src, ilist, new RegisterNasmAddress (REG_ECX));
+
+				// Call
+				ilist.push_back (new CallNasmInstruction ("_str_copy"));
+
+				return NO_ERROR;
 			}
 			else
 			{
@@ -163,24 +250,36 @@ int X86NasmBackend::compileAssignmentInstruction (AssignmentIlInstruction *instr
 
 	// Get op2 address
 	NasmAddress *op2_addr = NasmAddress::fromIl (op2_iladdr, data_, bss_, stack);
-	if (op2_addr == nullptr)
-	{
-		return ER_FAILED;
-	}
 
 	//
 	// Two operand case
 	//
 	if (r_iladdr->getType () == BT_STRING)
 	{
-		if (op_type != ILOP_ADD)
+		switch (op_type)
 		{
-			Error::internalError ("[x86-nasm] non-concatenation operator '" + IlOperatorAlias[op_type] + "' on string types");
+		case ILOP_ADD:
+			{
+				AssignmentIlInstruction *as = (AssignmentIlInstruction *) instruction;
+				NasmAddress *dest = NasmAddress::fromIl (as->getResult (), data_, bss_, stack);
+				NasmAddress *s1 = NasmAddress::fromIl (as->getOperand1 (), data_, bss_, stack);
+				NasmAddress *s2 = NasmAddress::fromIl (as->getOperand2 (), data_, bss_, stack);
+				assert (dest != nullptr && s1 != nullptr && s2 != nullptr);
+
+				// Unroll string addresses
+				unrollMemoryBasedAddress (dest, ilist, new RegisterNasmAddress (REG_EBX));
+				unrollMemoryBasedAddress (s1, ilist, new RegisterNasmAddress (REG_ECX));
+				unrollMemoryBasedAddress (s2, ilist, new RegisterNasmAddress (REG_EDX));
+				ilist.push_back (new CallNasmInstruction ("_str_concat"));
+			}
+			break;
+
+		default:
+			Error::internalError ("[x86-nasm] invalid operator '" + IlOperatorAlias[op_type] + "' on string types");
 			return ER_FAILED;
 		}
 
-		// TODO: string case, call concat subroutine
-		assert (false);
+		// All ok
 		return NO_ERROR;
 	}
 
@@ -975,7 +1074,16 @@ int X86NasmBackend::compileInstruction (IlInstruction *instruction, NasmInstruct
 		else
 		{
 			// Normal case, push DWORD
-			PushNasmInstruction *push = new PushNasmInstruction (addr);
+			PushNasmInstruction *push;
+			if (pi->getParameter ()->getType () == BT_STRING)
+			{
+				unrollMemoryBasedAddress (addr, ilist, new RegisterNasmAddress (REG_EAX));
+				push = new PushNasmInstruction (new RegisterNasmAddress (REG_EAX));
+			}
+			else
+			{
+				push = new PushNasmInstruction (addr);
+			}
 			ilist.push_back (push);
 		}
 	}
@@ -1071,6 +1179,10 @@ void X86NasmBackend::printInstructionList (NasmInstructionList &ilist, std::ofst
 
 int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 {
+	// Generate internal functions
+	NasmInstructionList int_functions;
+	generateInternalFunctions (int_functions);
+
 	// Compile program to Nasm primitives
 	NasmInstructionList main_block;
 	if (compileBlock (program->getMainBlock (), main_block) != NO_ERROR)
@@ -1109,9 +1221,11 @@ int X86NasmBackend::compile (IlProgram *program, std::string output_file)
 	assembly << std::endl;
 
 	// Start .text section
-	assembly << "section .text" << std::endl;
+	assembly << "section .text" << std::endl << std::endl;
 
-	// TODO: Write internal subroutines
+	// Write internal subroutines
+	printInstructionList (int_functions, assembly);
+	assembly << std::endl;
 
 	// TODO: Write program subroutines
 

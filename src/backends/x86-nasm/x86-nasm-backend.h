@@ -19,6 +19,9 @@ private:
 
 	NasmInstructionList program_exit_;
 
+	void generateInternalFunctions (NasmInstructionList &ilist);
+	void unrollMemoryBasedAddress (NasmAddress *address, NasmInstructionList &ilist, NasmAddress *dest);
+
 	int compileAssignmentInstruction (AssignmentIlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack);
 	int compileJumpInstruction (JumpIlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack);
 	int compileInstruction (IlInstruction *instruction, NasmInstructionList &ilist, NasmStackMap &stack);

@@ -138,7 +138,6 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 		if (fret != stack.end ())
 		{
 			// Found it!
-			assert (ta->getType () != BT_STRING);
 			naddr = new MemoryBasedNasmAddress (REG_EBP, (*fret).second.offset_);
 		}
 		else
@@ -157,8 +156,7 @@ NasmAddress *NasmAddress::fromIl (IlAddress *iladdr, NasmDataMap &data, NasmBssM
 			{
 				offset = ssize + 256;
 				stack.emplace (ta->getName (), NasmStackDefinition (256, offset));
-				naddr = nullptr;
-				assert (false);
+				naddr = new MemoryBasedNasmAddress (REG_EBP, offset);
 			}
 			else
 			{
