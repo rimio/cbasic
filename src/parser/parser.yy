@@ -83,6 +83,17 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 %token WEND
 %token XOR
 
+%left OR XOR
+%left AND
+%left NOT
+%left LT LT_EQ GT GT_EQ EQUAL NOT_EQUAL
+%left PLUS MINUS
+%left MODULO
+%left BACKSLASH
+%left STAR SLASH
+%precedence NEGATION
+%left POWER
+
 %token <ival> ILITERAL			"integer literal"
 %token <fval> FLITERAL			"float literal"
 %token <sval> SLITERAL			"string literal"
@@ -93,24 +104,14 @@ static int yylex (Parser::semantic_type *yylval, Parser::location_type *loc, Lex
 
 %type <statement_node>	allocation_statement_part
 %type <statement_node>	allocation_statement_part_list
-%type <expr_node>		and_op
-%type <expr_node>		comparison_op
 %type <expr_node>		expression
 %type <expr_node>		expression_list
 %type <identifier_node>	identifier
 %type <statement_node>	if_statement
-%type <expr_node>		intdiv_op
 %type <value_node>		literal
-%type <expr_node>		modulo_op
-%type <expr_node>		mul_div_op
-%type <expr_node>		negation_op
-%type <expr_node>		not_op
 %type <expr_node>		operand
-%type <expr_node>		or_xor_op
-%type <expr_node>		plus_minus_op
 %type <expr_node>		print_expression_list
 %type <statement_node>	print_statement
-%type <expr_node>		power_op
 %type <statement_node>	statement
 %type <statement_node>	statement_list
 %type <statement_node>	statement_with_newline
@@ -266,148 +267,95 @@ expression_list
 	;
 
 expression
-	: or_xor_op
-		{
-			$$ = $1;
-		}
-	;
-
-or_xor_op
-	: or_xor_op OR or_xor_op
+	: expression OR expression
 		{
 			$$ = new OrOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| or_xor_op XOR or_xor_op
+	| expression XOR expression
 		{
 			$$ = new XorOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| and_op
-		{
-			$$ = $1;
-		}
-	;
 
-and_op
-	: and_op AND and_op
+	| expression AND expression
 		{
 			$$ = new AndOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| not_op
-		{
-			$$ = $1;
-		}
-	;
 
-not_op
-	: NOT not_op
+	| NOT expression
 		{
 			$$ = new NotOperatorNode ($2);
 			$$->setLocation (@1);
 		}
-	| comparison_op
-		{
-			$$ = $1;
-		}
-	;
 
-comparison_op
-	: comparison_op LT comparison_op
+	| expression LT expression
 		{	
 			$$ = new LessThanOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| comparison_op LT_EQ comparison_op
+	| expression LT_EQ expression
 		{
 			$$ = new LessThanOrEqualOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| comparison_op GT comparison_op
+	| expression GT expression
 		{
 			$$ = new GreaterThanOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| comparison_op GT_EQ comparison_op
+	| expression GT_EQ expression
 		{
 			$$ = new GreaterThanOrEqualOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| comparison_op EQUAL comparison_op
+	| expression EQUAL expression
 		{
 			$$ = new EqualOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| comparison_op NOT_EQUAL comparison_op
+	| expression NOT_EQUAL expression
 		{
 			$$ = new NotEqualOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| plus_minus_op
-		{
-			$$ = $1;
-		}
-	;
-
-plus_minus_op
-	: plus_minus_op PLUS plus_minus_op
+		
+	| expression PLUS expression
 		{
 			$$ = new PlusOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| plus_minus_op MINUS plus_minus_op
+	| expression MINUS expression
 		{
 			$$ = new MinusOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| modulo_op
-		{
-			$$ = $1;
-		}
-	;
-
-modulo_op
-	: modulo_op MODULO modulo_op
+		
+	| expression MODULO expression
 		{
 			$$ = new ModuloOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| intdiv_op
-		{
-			$$ = $1;
-		}
-
-intdiv_op
-	: intdiv_op BACKSLASH intdiv_op
+		
+	| expression BACKSLASH expression
 		{
 			$$ = new IntDivisionOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| mul_div_op
-		{
-			$$ = $1;
-		}
-
-mul_div_op
-	: mul_div_op STAR mul_div_op
+		
+	| expression STAR expression
 		{
 			$$ = new MultiplicationOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| mul_div_op SLASH mul_div_op
+	| expression SLASH expression
 		{
 			$$ = new DivisionOperatorNode ($1, $3);
 			$$->setLocation (@1);
 		}
-	| negation_op
-		{
-			$$ = $1;
-		}
-	;
-
-negation_op
-	: MINUS negation_op
+		
+	| MINUS expression %prec NEGATION
 		{
 			$$ = new MinusOperatorNode ($2, nullptr);
 			$$->setLocation (@1);
@@ -426,16 +374,16 @@ negation_op
 				}
 			}
 		}
-	| power_op
-		{
-			$$ = $1;
-		}
-
-power_op
-	: power_op POWER power_op
+		
+	| expression POWER expression
 		{
 			$$ = new PowerOperatorNode ($1, $3);
 			$$->setLocation (@1);
+		}
+
+	| PAR_OPEN expression PAR_CLOSE
+		{
+			$$ = $2;
 		}
 	| operand
 		{
@@ -451,6 +399,10 @@ operand
 	| identifier
 		{
 			$$ = $1;
+		}
+	| PAR_OPEN operand PAR_CLOSE
+		{
+			$$ = $2;
 		}
 	;
 

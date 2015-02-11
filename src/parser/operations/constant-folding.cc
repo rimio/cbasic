@@ -366,7 +366,15 @@ ParserNode *fold_constants (ParserNode *node, struct TreeWalkContext *context)
 					switch (t_left)
 					{
 					case BT_INT:
-						new_val = new IntegerValueNode (i_left % i_right);
+						if (i_right == 0)
+						{
+							Error::semanticError ("modulo zero while folding constants", right);
+							context->ret_code = ER_FAILED;
+						}
+						else
+						{
+							new_val = new IntegerValueNode (i_left % i_right);
+						}
 						break;
 					case BT_FLOAT:
 						assert (false);
