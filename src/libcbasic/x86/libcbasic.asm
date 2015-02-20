@@ -17,7 +17,7 @@ section .bss
 
 section .data
   ; debug stuff
-  ftest:     db 0x00,0x00,0x00,0x00,0x00,0x00,0x33,0x01
+  ftest:     db 0x3D,0x00,0x00,0x00,0x04,0x00,0x00,0x71
   stest:     db 0x0C,'Ana are mere'
 
 section .text
@@ -64,7 +64,7 @@ _inline_w2s:
   mov bx, ax
   and bx, 0x8000
   jz .print_digits
-  mov bl, 0x2D
+  mov bl, '-'
   mov [ecx], byte bl
   inc ecx
   neg ax
@@ -92,6 +92,7 @@ _inline_w2s:
   mov di, 0
   cmp bx, 0
   jnz .loop
+  ; This falls trough if all digits are zero and prints just one zero
 .write_digit:
   ; Write digit (assume ax < 10)
   add al, 0x30
@@ -115,9 +116,141 @@ _inline_w2s:
 ; FLOATING POINT NUMBERS OPERATIONS
 ;
 
+; Print a CBASIC floating point number
+; Param1:  8byte floating point number (stack)
+; Returns: error code of _f2s
+_fprint:
+   ; Fetch float
+  mov eax, dword [esp+4]
+  mov ebx, dword [esp+8]
+  ; Convert to string
+  push dword fsbuffer
+  push ebx
+  push eax
+  call _f2s
+  add esp, 12
+  cmp eax, 0
+  jnz .end
+  ; Print string
+  push dword fsbuffer
+  call _sprint
+  add esp, 4
+  mov eax, 0
+.end:
+  ret
+
 ; Print a CBASIC floating point number (scientific format)
 ; Param1:  8byte floating point number (stack)
 ; Returns: error code of _f2s_scientific
+_fprint_scientific:
+  ; Fetch float
+  mov eax, dword [esp+4]
+  mov ebx, dword [esp+8]
+  ; Convert to string
+  push dword fsbuffer
+  push ebx
+  push eax
+  call _f2s_scientific
+  add esp, 12
+  cmp eax, 0
+  jnz .end
+  ; Print string
+  push dword fsbuffer
+  call _sprint
+  add esp, 4
+  mov eax, 0
+.end:
+  ret
+
+; Convert a CBASIC floating point number to a string
+; Param1:  8byte floating point number (stack)
+; Param2:  address to string buffer (stack)
+; Returns: 0 on success, 1 on failure
+_f2s:
+  ; Clear EAX
+  ; AL = buffer for digits
+  mov eax, 0
+  ; String iterator
+  mov ecx, dword [esp+12]    ; 4 (eip) + 8 (param1)
+  mov [ecx], byte 0          ; initialize size to zero (in case of error)
+  inc ecx                    ; skip size byte
+  ; Float reverse iterator
+  mov edx, esp
+  add edx, 11                ; last byte of param1
+  ; EDI will hold pointer in string to last non-zero digit after first two digits
+  ; Initialize in case of shitstorm
+  mov edi, ecx
+  ; Print sign
+  mov al, byte [esp+4]
+  test al, 0x80
+  jz .fetch_exp
+  mov al, '-'
+  mov [ecx], al
+  inc ecx
+.fetch_exp:
+  and al, 0x7F
+  mov ebx, eax
+  sub ebx, 0x40
+.leading_zeros:
+  ; E-? case, print leading zeros
+  test ebx, ebx
+  jns .loop
+  mov al, 0x30
+  mov [ecx], byte al
+  inc ecx
+  inc ebx
+  jmp .leading_zeros
+.loop:
+  ; Fetch byte
+  mov al, byte [edx]
+  test ebx, 0x1
+  jz .check_range
+  shr al, 4
+  dec edx
+.check_range:
+  and al, 0xF
+  ; Check 0-9 range
+  cmp al, 9
+  ;jg .error
+  ; Print digit
+  add al, 0x30               ; '0' + al
+  mov [ecx], byte al
+  inc ecx
+  ; Print dot after first digit
+  cmp ebx, 0
+  jnz .fractional_part
+  mov [ecx], byte '.'
+  inc ecx
+  mov edi, ecx
+  jmp .loop_next
+.fractional_part:
+  cmp ebx, 1
+  jz .save_digit_as_nonzero
+  ; If digit is non-zero, save ECX as last true non-zero digit
+  sub al, 0x30
+  jz .loop_next
+.save_digit_as_nonzero:
+  mov edi, ecx
+.loop_next:
+  ; Advance and loop
+  inc ebx
+  cmp ebx, 14
+  jnz .loop
+  ; Re-initialize ECX
+  ;mov ecx, edi
+  ; Put string size
+  mov eax, ecx
+  mov ecx, dword [esp+12]
+  sub eax, ecx
+  dec eax
+  mov [ecx], al
+  ; All ok
+  mov eax, 0
+  ret
+.error:
+  ; An error occured
+  mov eax, 1
+  ret
 
 ; Convert a CBASIC floating point number to a string (scientific format)
 ; Param1:  8byte floating point number (stack)
@@ -136,6 +269,16 @@ _f2s_scientific:
   ; Float reverse iterator
   mov edx, esp
   add edx, 11                ; last byte of param1
+  ; EDI will hold pointer in string to last non-zero digit after first two digits
+  ; Initialize in case of shitstorm
+  mov edi, ecx
+  ; Print sign
+  mov al, byte [esp+4]
+  and al, 0x80
+  jz .loop
+  mov al, '-'
+  mov [ecx], al
+  inc ecx
 .loop:
   ; Fetch byte
   mov al, byte [edx]
@@ -154,14 +297,26 @@ _f2s_scientific:
   inc ecx
   ; Print dot after first digit
   cmp ebx, 0
-  jnz .loop_next
+  jnz .fractional_part
   mov [ecx], byte '.'
   inc ecx
+  mov edi, ecx
+  jmp .loop_next
+.fractional_part:
+  cmp ebx, 1
+  jz .save_digit_as_nonzero
+  ; If digit is non-zero, save ECX as last true non-zero digit
+  sub al, 0x30
+  jz .loop_next
+.save_digit_as_nonzero:
+  mov edi, ecx
 .loop_next:
   ; Advance and loop
   inc ebx
   cmp ebx, 14
   jnz .loop
+  ; Re-initialize ECX
+  mov ecx, edi
   ; Print E
   mov [ecx], byte 'E'
   inc ecx
@@ -176,6 +331,7 @@ _f2s_scientific:
   mov eax, ecx
   mov ecx, dword [esp+12]
   sub eax, ecx
+  dec eax
   mov [ecx], al
   ; All ok
   mov eax, 0
@@ -187,16 +343,10 @@ _f2s_scientific:
 
 _start:
   ; Wrint float
-  push dword fsbuffer
   push dword [ftest+4]
   push dword [ftest]
-  call _f2s_scientific
-  add esp, 12
-
-  ; Print string
-  push dword fsbuffer
-  call _sprint
-  add esp, 4
+  call _fprint
+  add esp, 8
 
   mov ebx, 0
   mov eax, 1
